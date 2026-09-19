@@ -59,8 +59,8 @@ export async function setStatus(id: string, status: SessionStatus): Promise<Resu
 
 export type SessionInput = {
   display_no: string; date: string; location: string; room: string;
-  capacity: string; expected: string; actual: string;
-  ft_name: string; status: string; study_url: string; note: string;
+  expected: string; actual: string; // expected = 대상자 인원
+  ft_name: string; status: string; note: string;
 };
 
 /** 차수 추가(id=null)·수정. slug는 생성 시 1회 발급 후 불변 (R2). */
@@ -72,17 +72,14 @@ export async function saveSession(id: string | null, input: SessionInput): Promi
   if (!display_no || display_no.length > 10) return fail("차수 번호를 입력해 주세요.");
   if (input.date && !/^\d{4}-\d{2}-\d{2}$/.test(input.date)) return fail("날짜 형식을 확인해 주세요.");
   if (!STATUSES.includes(input.status as SessionStatus)) return fail("상태를 선택해 주세요.");
-  const nums = { capacity: int(input.capacity), expected: int(input.expected), actual: int(input.actual) };
+  const nums = { expected: int(input.expected), actual: int(input.actual) };
   for (const n of Object.values(nums))
     if (n !== null && (!Number.isInteger(n) || n < 0 || n > 2000)) return fail("인원은 0~2000 사이 숫자로 입력해 주세요.");
-  const study_url = str(input.study_url, 500);
-  if (study_url && !/^https?:\/\//.test(study_url)) return fail("학습자료 URL은 http(s)://로 시작해야 합니다.");
-
   const row = {
     display_no, date: input.date || null,
     location: str(input.location, 40), room: str(input.room, 20),
     ...nums, ft_name: str(input.ft_name, 40),
-    status: input.status as SessionStatus, study_url, note: str(input.note, 500),
+    status: input.status as SessionStatus, note: str(input.note, 500),
   };
 
   const db = await adminDb();

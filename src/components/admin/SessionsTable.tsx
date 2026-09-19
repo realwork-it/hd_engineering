@@ -12,13 +12,13 @@ export type Stats = {
 };
 
 const EMPTY: SessionInput = {
-  display_no: "", date: "", location: "", room: "", capacity: "", expected: "", actual: "",
-  ft_name: "", status: "confirmed", study_url: "", note: "",
+  display_no: "", date: "", location: "", room: "", expected: "", actual: "",
+  ft_name: "", status: "confirmed", note: "",
 };
 const toInput = (s: SessionRow): SessionInput => ({
   display_no: s.display_no, date: s.date?.slice(0, 10) ?? "", location: s.location ?? "", room: s.room ?? "",
-  capacity: s.capacity?.toString() ?? "", expected: s.expected?.toString() ?? "", actual: s.actual?.toString() ?? "",
-  ft_name: s.ft_name ?? "", status: s.status, study_url: s.study_url ?? "", note: s.note ?? "",
+  expected: s.expected?.toString() ?? "", actual: s.actual?.toString() ?? "",
+  ft_name: s.ft_name ?? "", status: s.status, note: s.note ?? "",
 });
 
 export function SessionsTable({
@@ -56,19 +56,18 @@ export function SessionsTable({
         <div className="ad-tablewrap">
           <table>
             <thead>
-              <tr><th>차수</th><th>일정</th><th>장소</th><th>정원</th><th>예상</th><th>실참석</th><th>FT</th><th>상태</th><th>조회·제출</th><th /></tr>
+              <tr><th>차수</th><th>일정</th><th>장소</th><th>대상자</th><th>실참석</th><th>FT</th><th>상태</th><th>조회·제출</th><th /></tr>
             </thead>
             <tbody>
               {visible.map((s) => {
                 const st = stats[s.id];
-                const base = s.expected ?? s.capacity;
+                const base = s.expected;
                 const hasData = st && st.study_views + st.identities + st.finders + st.pledges + st.pulses > 0;
                 return (
                   <tr key={s.id} className={s.status === "canceled" ? "dim" : ""}>
                     <td><b>{s.display_no}</b></td>
                     <td className="nw">{dateLabel(s.date) ?? "미정"}</td>
                     <td className="nw">{[s.location, s.room].filter(Boolean).join(" ") || "—"}</td>
-                    <td>{s.capacity ?? "—"}</td>
                     <td>{s.expected ?? "—"}</td>
                     <td>
                       {s.actual ?? "—"}
@@ -97,7 +96,7 @@ export function SessionsTable({
           </table>
         </div>
         <div className="ad-helper">
-          전체 {sessions.length - canceled}개 차수. 참석률 = 실참석 ÷ 예상(없으면 정원).
+          전체 {sessions.length - canceled}개 차수. 참석률 = 실참석 ÷ 대상자 인원.
           차수는 삭제하지 않고 &apos;취소&apos; 상태로 바꿉니다.
         </div>
       </div>
@@ -147,11 +146,8 @@ function EditModal({
           <div><label htmlFor="f-ft">FT</label><input id="f-ft" value={v.ft_name} onChange={set("ft_name")} maxLength={40} /></div>
           <div><label htmlFor="f-loc">장소</label><input id="f-loc" value={v.location} onChange={set("location")} placeholder="예) 대강의실, 포럼관" maxLength={40} /></div>
           <div><label htmlFor="f-room">강의실</label><input id="f-room" value={v.room} onChange={set("room")} placeholder="예) A, B, C" maxLength={20} /></div>
-          <div><label htmlFor="f-cap">정원</label><input id="f-cap" inputMode="numeric" value={v.capacity} onChange={set("capacity")} /></div>
-          <div><label htmlFor="f-exp">예상 인원</label><input id="f-exp" inputMode="numeric" value={v.expected} onChange={set("expected")} /></div>
+          <div><label htmlFor="f-exp">대상자 인원</label><input id="f-exp" inputMode="numeric" value={v.expected} onChange={set("expected")} /></div>
           <div><label htmlFor="f-act">실참석</label><input id="f-act" inputMode="numeric" value={v.actual} onChange={set("actual")} placeholder="종료 후 입력" /></div>
-          <div />
-          <div className="full"><label htmlFor="f-url">학습자료 URL <span style={{ fontWeight: 400, color: "var(--mut)" }}>(비우면 기본 자료)</span></label><input id="f-url" value={v.study_url} onChange={set("study_url")} placeholder="https://" /></div>
           <div className="full"><label htmlFor="f-note">메모</label><textarea id="f-note" value={v.note} onChange={set("note")} maxLength={500} /></div>
         </div>
         {error && <div className="ad-err" role="alert">{error}</div>}

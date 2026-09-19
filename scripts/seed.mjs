@@ -46,7 +46,7 @@ const teams = teamRows.map((r) => ({
 
 // sessions --------------------------------------------------------------------
 const sessionRows = readCsv("seed_sessions.csv");
-assert(sessionRows.length === 40, `sessions 40행이어야 함 (실제 ${sessionRows.length})`);
+assert(sessionRows.length > 0 && new Set(sessionRows.map((r) => r.display_no)).size === sessionRows.length, "sessions: 차수 번호 중복");
 assert(POOL_ADJ.length === 50 && POOL_NOUN.length === 50, "Pool은 각 50개");
 {
   const { count, error } = await db.from("sessions").select("id", { count: "exact", head: true });
@@ -67,8 +67,9 @@ assert(POOL_ADJ.length === 50 && POOL_NOUN.length === 50, "Pool은 각 50개");
         date: r.date || null,
         location,
         room: rest.join(" ") || null,
-        capacity: r.capacity ? Number(r.capacity) : null,
+        capacity: r.capacity ? Number(r.capacity) : null, // 팀 배정용 참고값 — 화면·집계에는 쓰지 않는다
         status: r.status,
+        ft_name: r.FT && r.FT !== "미정" ? r.FT : null,
         note: r.note || null,
       };
     });

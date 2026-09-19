@@ -116,8 +116,8 @@ assert.equal((await one("select count(*)::int c from teams where status='pending
 await one("select close_session($1)", [sid1]);
 assert.deepEqual(await one("select status, locks->>'pledge' p, locks->>'study' st from sessions where slug='s1'"), { status: 'done', p: 'false', st: 'true' });
 assert.equal((await one("select submit_pledge($1,'s1',$2,null,'집요한','도전','종료 후 제출','devX3') r", [U(), teamA])).r.status, 'locked');
-await db.exec("insert into sessions(slug,display_no,status,capacity) values ('s9','9','running',70)");
-assert.equal((await one("select dashboard_data() d")).d.people, 170, "예상·실참석이 없으면 정원으로 잠정 집계 (100 + 70)");
+await db.exec("insert into sessions(slug,display_no,status,capacity,expected) values ('s9','9','running',150,70)");
+assert.equal((await one("select dashboard_data() d")).d.people, 170, "실참석이 없으면 대상자 인원으로 잠정 집계 (100 + 70) — 정원(150)은 쓰지 않는다");
 // Pulse 응답률 분모: 완료(s1=100)만. 진행 중인 s9(70)는 Pulse 응답이 없으므로 제외 → 응답이 들어오면 포함
 assert.equal((await one("select dashboard_data() d")).d.pulse.people, 100);
 await db.exec("update sessions set locks = locks || '{\"pulse\":true}' where slug='s9'");

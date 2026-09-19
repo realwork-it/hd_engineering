@@ -6,7 +6,7 @@ import { PledgeFlow } from "./PledgeFlow";
 import { TalentShift } from "./TalentShift";
 
 // R16 분모
-const TOTAL_SESSIONS = 40, TOTAL_PEOPLE = 2659, TOTAL_TEAMS = 164;
+const TOTAL_PEOPLE = 2659, TOTAL_TEAMS = 164; // 총 차수는 일정에 따라 바뀌므로 데이터에서 센다
 const POLL_MS = 30_000;
 const ROAD_D = "M 20 108 C 240 30, 420 138, 650 84 S 1060 26, 1280 96";
 const PULSE_LABELS = ["가치체계 이해", "가치체계 공감", "팀 연결", "실천 의지"];
@@ -48,6 +48,7 @@ export function DashboardView({ initial }: { initial: DashboardData }) {
   }, []);
 
   const regular = data.sessions;
+  const TOTAL_SESSIONS = Math.max(1, regular.length);
   const done = regular.filter((s) => s.status === "done").length;
   const running = data.sessions.filter((s) => s.status === "running");
   const pct = (n: number, total: number) => Math.min(100, Math.round((n / total) * 100));
@@ -81,7 +82,7 @@ export function DashboardView({ initial }: { initial: DashboardData }) {
           <section className="db-card db-hero">
             <div className="db-hero-top">
               <div className="db-hero-title">
-                <h2>40차수의 길</h2>
+                <h2>{regular.length}차수의 길</h2>
                 <div className="db-cap">이정표 하나가 워크숍 한 차수입니다 — 마우스를 올려보세요</div>
               </div>
               <div className="db-counters">
@@ -102,7 +103,7 @@ export function DashboardView({ initial }: { initial: DashboardData }) {
                 {running.length > 0 ? (
                   <>지금 <b>{running.map(label).join(" · ")}</b> 진행 중{running.length === 1 && running[0].place ? ` — ${running[0].place}` : ""}
                     {running.reduce((a, s) => a + s.people, 0) > 0 && ` · ${running.reduce((a, s) => a + s.people, 0)}명`}</>
-                ) : done >= TOTAL_SESSIONS ? <b>40차수 완주</b> : "다음 차수를 준비하고 있습니다"}
+                ) : done >= TOTAL_SESSIONS ? <b>{regular.length}차수 완주</b> : "다음 차수를 준비하고 있습니다"}
               </span>
               <span>완주까지 <b>{Math.max(0, TOTAL_SESSIONS - done)}차수</b></span>
             </div>

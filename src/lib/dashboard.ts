@@ -22,7 +22,6 @@ export type DashboardData = {
 };
 
 // R16 분모 (SPEC §0)
-export const TOTAL_SESSIONS = 40;
 export const TOTAL_PEOPLE = 2659;
 export const TOTAL_TEAMS = 164;
 

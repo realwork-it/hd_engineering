@@ -21,7 +21,7 @@ const HEADERS: Record<string, Field | "display_no"> = {
   location: "location", "장소": "location",
   room: "room", "강의실": "room", "방": "room",
   capacity: "capacity", "정원": "capacity",
-  expected: "expected", "예상": "expected", "예상인원": "expected", "입과인원": "expected",
+  expected: "expected", "예상": "expected", "예상인원": "expected", "입과인원": "expected", "대상자": "expected", "대상자인원": "expected", "대상인원": "expected",
   status: "status", "상태": "status",
   ft: "ft_name", ft_name: "ft_name", "ft이름": "ft_name", "퍼실리테이터": "ft_name", "강사": "ft_name",
   note: "note", "메모": "note", "비고": "note",
@@ -31,7 +31,7 @@ const STATUS: Record<string, SessionStatus> = {
   done: "done", "완료": "done", canceled: "canceled", cancelled: "canceled", "취소": "canceled",
 };
 export const FIELD_LABEL: Record<Field, string> = {
-  date: "일정", location: "장소", room: "강의실", capacity: "정원", expected: "예상", status: "상태", ft_name: "FT", note: "메모",
+  date: "일정", location: "장소", room: "강의실", capacity: "정원", expected: "대상자", status: "상태", ft_name: "FT", note: "메모",
 };
 
 const pad = (n: number) => String(n).padStart(2, "0");

@@ -24,7 +24,7 @@ export async function loadPulse() {
   const db = await adminDb();
   const [rows, { data: sess }] = await Promise.all([
     fetchAll<Row>(db, "pulses", "session_id, open_text, created_at, q1_pre, q1_post, q2_pre, q2_post, q3_pre, q3_post, q4_pre, q4_post"),
-    db.from("sessions").select("id, display_no, date, location, room, ft_name, actual, expected, capacity, status").neq("status", "canceled"),
+    db.from("sessions").select("id, display_no, date, location, room, ft_name, actual, expected, status").neq("status", "canceled"),
   ]);
   const meta = new Map((sess ?? []).map((s) => [s.id, s]));
   const live = rows.filter((r) => meta.has(r.session_id));
@@ -38,7 +38,7 @@ export async function loadPulse() {
     const d = mean(rs.map(delta));
     return {
       id, no: s.display_no, date: s.date, place: [s.location, s.room].filter(Boolean).join(" "), ft: s.ft_name,
-      people: s.actual ?? s.expected ?? s.capacity, n: rs.length, delta: d,
+      people: s.actual ?? s.expected, n: rs.length, delta: d,
       alert: d < overall - ALERT_GAP && rs.length >= ALERT_MIN_N, // 응답이 적은 차수는 표시하지 않는다
     };
   }).sort((a, b) => (a.date ?? "9").localeCompare(b.date ?? "9") || Number(a.no) - Number(b.no));
@@ -53,7 +53,7 @@ export async function loadPulse() {
   // 응답률 분모 — 현황판(dashboard_data)과 같은 기준: 완료된 차수 + Pulse 응답이 들어온 진행 중 차수
   const people = (sess ?? [])
     .filter((s) => s.status === "done" || (s.status === "running" && bySession.has(s.id)))
-    .reduce((a, s) => a + (s.actual ?? s.expected ?? s.capacity ?? 0), 0);
+    .reduce((a, s) => a + (s.actual ?? s.expected ?? 0), 0);
   const texts: OpenText[] = live.map((r) => ({
     session_id: r.session_id, session_no: meta.get(r.session_id)!.display_no, text: r.open_text, created_at: r.created_at,
   }));

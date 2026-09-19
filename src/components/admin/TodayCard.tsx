@@ -19,7 +19,7 @@ export function TodayCard({ session: s, hubUrl, notice }: { session: SessionRow;
   const [actual, setActualText] = useState(s.actual?.toString() ?? "");
   const [pending, start] = useTransition();
 
-  const base = s.expected ?? s.capacity;
+  const base = s.expected;
   const rate = actual && base ? `참석률 ${Math.round((Number(actual) / base) * 100)}%` : "";
 
   function toggle(activity: Activity) {
@@ -59,7 +59,7 @@ export function TodayCard({ session: s, hubUrl, notice }: { session: SessionRow;
         <div>
           <div className="n">{sessionLabel(s.display_no)} · {[s.location, s.room].filter(Boolean).join(" ") || "장소 미정"}</div>
           <div className="d">
-            {s.expected != null ? `예상 ${s.expected}명` : s.capacity != null ? `정원 ${s.capacity}명` : "인원 미정"}
+            {s.expected != null ? `대상자 ${s.expected}명` : "대상자 인원 미입력"}
             {" · "}FT {s.ft_name ?? "미정"}
           </div>
         </div>
