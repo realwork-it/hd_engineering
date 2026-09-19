@@ -67,17 +67,17 @@ export default async function PulsePage({ searchParams }: PageProps<"/admin/puls
         <>
           <div className="ad-pulse-grid">
             <div className="ad-card">
-              <div className="hd"><div><h2>차수별 평균 상승폭 추이</h2><div className="cap">4문항 평균 델타(지금의 나 − 워크숍 전의 나) — 운영 품질의 조기 경보선 · 경보는 응답 {ALERT_MIN_N}건 이상인 차수만</div></div></div>
+              <div className="hd"><div><h2>차수별 평균 상승폭 추이</h2><div className="cap">4문항 평균 델타(지금의 나 − 워크숍 전의 나) — 차수별 운영 품질 비교 · &apos;평균 대비 낮음&apos; 표시는 응답 {ALERT_MIN_N}건 이상인 차수만</div></div></div>
               <div className="ad-chartbox"><Trend sessions={p.sessions} overall={p.overall} /></div>
               {alerts.map((s) => (
                 <div className="ad-alert" key={s.id} style={{ marginTop: 12, marginBottom: 0 }}>
-                  ⚠️ <span><b>{sessionLabel(s.no)}({dateLabel(s.date) ?? "일정 미정"}) 상승폭 {sign(s.delta)}</b> — 평균({sign(p.overall)}) 대비 {ALERT_GAP.toFixed(1)} 이상 낮습니다.
+                  <span className="ad-badge flag" style={{ flexShrink: 0 }}>평균 대비 낮음</span> <span><b>{sessionLabel(s.no)}({dateLabel(s.date) ?? "일정 미정"}) 상승폭 {sign(s.delta)}</b> — 평균({sign(p.overall)}) 대비 {ALERT_GAP.toFixed(1)} 이상 낮습니다.
                     {s.place && ` ${s.place}`}{s.people ? ` · ${s.people}명` : ""}{s.ft ? ` · FT ${s.ft}` : ""}. 운영 리뷰를 권합니다.</span>
                 </div>
               ))}
               {p.sessions.some((x) => x.lowN) && (
                 <div className="ad-helper">
-                  점선 원 = 평균은 낮지만 응답이 {ALERT_MIN_N}건 미만이라 경보를 보류한 차수({p.sessions.filter((x) => x.lowN).map((x) => `${sessionLabel(x.no)} ${x.n}건`).join(", ")}).
+                  점선 원 = 평균은 낮지만 응답이 {ALERT_MIN_N}건 미만이라 &apos;평균 대비 낮음&apos; 표시를 보류한 차수({p.sessions.filter((x) => x.lowN).map((x) => `${sessionLabel(x.no)} ${x.n}건`).join(", ")}).
                 </div>
               )}
             </div>

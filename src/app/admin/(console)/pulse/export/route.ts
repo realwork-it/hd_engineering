@@ -30,7 +30,7 @@ export async function GET(request: Request) {
   sum.columns = [
     { header: "차수", key: "no", width: 8 }, { header: "일정", key: "date", width: 12 }, { header: "장소", key: "place", width: 16 },
     { header: "FT", key: "ft", width: 12 }, { header: "인원", key: "people", width: 8 }, { header: "응답 수", key: "n", width: 8 },
-    { header: "평균 상승폭", key: "delta", width: 12 }, { header: "경보", key: "alert", width: 8 },
+    { header: "평균 상승폭", key: "delta", width: 12 }, { header: "평균 대비 낮음", key: "alert", width: 14 },
   ];
   for (const s of p.sessions)
     sum.addRow({ no: s.no, date: s.date?.slice(0, 10), place: s.place, ft: s.ft, people: s.people, n: s.n, delta: Number(s.delta.toFixed(2)), alert: s.alert ? "Y" : "" });

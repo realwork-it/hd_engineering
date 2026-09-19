@@ -86,7 +86,7 @@ export async function restTable(db, table, req, url, body, res) {
     { "content-range": offset + "-" + (offset + Math.max(rows.length - 1, 0)) + "/" + total });
 }
 
-/** 시각 점검용: 긴 문장·미등록 팀·복수 제출·숨김·Pulse 경보가 섞인 데이터 */
+/** 시각 점검용: 긴 문장·미등록 팀·복수 제출·숨김·Pulse '평균 대비 낮음' 차수가 섞인 데이터 */
 export async function seedVisualCases(db) {
   const id = async (sql) => (await db.query(sql)).rows[0].id;
   const s14 = await id("select id from sessions where slug='live14'"), s03 = await id("select id from sessions where slug='live03'");

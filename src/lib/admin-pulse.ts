@@ -3,8 +3,8 @@ import { adminDb } from "@/lib/admin";
 import { fetchAll } from "@/lib/admin-data";
 
 export const PULSE_LABELS = ["가치체계 이해", "가치체계 공감", "팀 연결", "실천 의지"];
-export const ALERT_GAP = 1.0; // 전체 평균 대비 이만큼 낮으면 경보 (SPEC §5.3)
-export const ALERT_MIN_N = 15; // 응답이 이보다 적은 차수는 평균이 우연에 크게 흔들린다 → 경보를 띄우지 않는다
+export const ALERT_GAP = 1.0; // 전체 평균 대비 이만큼 낮으면 '평균 대비 낮음' 표시 (SPEC §5.3의 경보 마커 — 화면 용어만 순화)
+export const ALERT_MIN_N = 15; // 응답이 이보다 적은 차수는 평균이 우연에 크게 흔들린다 → 표시하지 않는다
 
 type Row = {
   session_id: string; open_text: string; created_at: string;
@@ -14,7 +14,7 @@ type Row = {
 export type PulseSession = {
   id: string; no: string; date: string | null; place: string; ft: string | null;
   people: number | null; n: number; delta: number; alert: boolean;
-  /** 평균은 기준 미달이지만 응답 수가 적어 경보를 보류한 차수 */
+  /** 평균은 기준 미달이지만 응답 수가 적어 표시를 보류한 차수 */
   lowN: boolean;
 };
 export type OpenText = { session_no: string; text: string; created_at: string; session_id: string };
