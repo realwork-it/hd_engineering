@@ -6,7 +6,7 @@ import { adminDb } from "@/lib/admin";
 export type Tab = "identity" | "finder" | "pledge";
 export const TABS: Record<Tab, { table: string; label: string }> = {
   identity: { table: "team_identities", label: "팀 정체성" },
-  finder: { table: "finder_submissions", label: "조별 인재상" },
+  finder: { table: "finder_submissions", label: "인재상" },
   pledge: { table: "pledges", label: "개인다짐" },
 };
 

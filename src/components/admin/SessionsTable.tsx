@@ -56,13 +56,13 @@ export function SessionsTable({
         <div className="ad-tablewrap">
           <table>
             <thead>
-              <tr><th>차수</th><th>일정</th><th>장소</th><th>대상인원</th><th>실참석</th><th>FT</th><th>상태</th><th>조회·제출</th><th /></tr>
+              <tr><th>차수</th><th>일정</th><th>장소</th><th>대상인원</th><th>실참석</th><th>FT</th><th>상태</th><th>참여현황</th><th /></tr>
             </thead>
             <tbody>
               {visible.map((s) => {
                 const st = stats[s.id];
                 const base = s.expected;
-                const hasData = st && st.study_views + st.identities + st.finders + st.pledges + st.pulses > 0;
+                const hasData = st && st.identities + st.finders + st.pledges + st.pulses > 0;
                 return (
                   <tr key={s.id} className={s.status === "canceled" ? "dim" : ""}>
                     <td><b>{s.display_no}</b></td>
@@ -78,8 +78,8 @@ export function SessionsTable({
                     <td>
                       {hasData ? (
                         <>
-                          자료 {st.study_views} · Pulse {st.pulses}
-                          <div className="sub">정체성 {st.identities} · 인재상 {st.finders} · 다짐 {st.pledges}</div>
+                          Pulse {st.pulses} · 정체성 {st.identities}
+                          <div className="sub">인재상 {st.finders} · 다짐 {st.pledges}</div>
                         </>
                       ) : "—"}
                     </td>

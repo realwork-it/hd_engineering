@@ -7,7 +7,7 @@ import { closeSession, setActual, setLock, setStatus } from "@/app/admin/(consol
 import { StatusBadge, copyText, useToast } from "./ui";
 
 const ACT_LABEL: Record<Activity, string> = {
-  study: "시험공부 자료", identity: "팀 정체성", finder: "조별 인재상", pledge: "개인다짐", pulse: "Pulse Check",
+  study: "시험공부 자료", identity: "팀 정체성", finder: "인재상", pledge: "개인다짐", pulse: "Pulse Check",
 };
 
 export function TodayCard({ session: s, hubUrl, notice }: { session: SessionRow; hubUrl: string; notice: string }) {
