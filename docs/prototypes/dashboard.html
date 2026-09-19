@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>현대엔지니어링 가치체계 내재화 여정 — 실시간 현황판</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --bg:#0A1730; --bg2:#0D1C3B; --card:#11224A; --card-line:#1C3160;
+  --ink:#F2F5FB; --sub:#8FA2C8; --mut:#5C6F99;
+  --gold:#E3B341; --gold-deep:#C79A2A; --amber:#E8762C;
+  --pre:#6FA8E8; --grid:#1A2C55;
+  --r:18px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Pretendard Variable",Pretendard,-apple-system,"Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;min-height:100vh}
+.wrap{max-width:1360px;margin:0 auto;padding:26px 32px 40px}
+
+/* ---------- header ---------- */
+header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px}
+header .t h1{font-size:23px;font-weight:800;letter-spacing:-.015em}
+header .t .s{font-size:13px;color:var(--sub);margin-top:3px}
+header .r{display:flex;align-items:center;gap:9px}
+.pill{font-size:12px;font-weight:600;color:var(--sub);border:1px solid var(--card-line);border-radius:99px;padding:5px 12px}
+.pill.live{color:#7FD8A2;border-color:#1E4A38;display:flex;align-items:center;gap:6px}
+.pill.live::before{content:"";width:7px;height:7px;border-radius:50%;background:#4CC078;animation:blink 2.2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+.pill.demo{color:var(--gold);border-color:#4A3A12}
+
+/* ---------- grid ---------- */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.card{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--card-line);border-radius:var(--r);padding:22px 24px;position:relative;overflow:hidden}
+.card h2{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.card .cap{font-size:12px;color:var(--sub);margin-top:2px}
+.card .hd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+.card .hd .note{font-size:11.5px;color:var(--mut)}
+
+/* ---------- hero: journey ---------- */
+.hero{grid-column:span 12;padding:26px 30px 20px}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:30px}
+.hero-title h2{font-size:17px}
+.hero-title .cap{margin-top:3px}
+.counters{display:flex;gap:38px}
+.counter{text-align:right}
+.counter .n{font-size:34px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.counter .n .u{font-size:16px;font-weight:700;color:var(--sub);margin-left:2px}
+.counter .l{font-size:12px;color:var(--sub);margin-top:1px}
+.counter.gold .n{color:var(--gold)}
+.roadbox{margin-top:8px;position:relative}
+.roadbox svg{width:100%;height:150px;display:block}
+.road-base{fill:none;stroke:var(--grid);stroke-width:5;stroke-linecap:round}
+.road-done{fill:none;stroke:url(#goldgrad);stroke-width:5;stroke-linecap:round}
+.node{fill:var(--bg);stroke:var(--mut);stroke-width:1.6}
+.node.done{fill:var(--gold);stroke:var(--gold-deep)}
+.node.now{fill:var(--amber);stroke:#F5B98C;stroke-width:2}
+.ring{fill:none;stroke:var(--amber);stroke-width:1.6;opacity:.8;transform-origin:center;animation:ring 2s ease-out infinite}
+@keyframes ring{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.1);opacity:0}}
+.roadmeta{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin-top:6px}
+.roadmeta b{color:var(--ink);font-weight:700}
+.tip{position:absolute;pointer-events:none;background:#050D1F;border:1px solid var(--card-line);border-radius:10px;padding:8px 11px;font-size:12px;line-height:1.5;color:var(--ink);opacity:0;transition:opacity .12s;white-space:nowrap;z-index:9}
+.tip .d{color:var(--sub);font-size:11px}
+
+/* ---------- cloud ---------- */
+.cloud-card{grid-column:span 7}
+.cloud-stage{position:relative;height:296px}
+.cloud-word{position:absolute;font-weight:800;letter-spacing:-.02em;white-space:nowrap;transform:translate(-50%,-50%)}
+.subslots{display:flex;gap:26px;margin-top:10px;padding-top:14px;border-top:1px solid var(--card-line)}
+.subslot .k{font-size:11.5px;color:var(--sub);margin-bottom:6px}
+.subslot .chips{display:flex;gap:6px;flex-wrap:wrap}
+.subslot .chip{font-size:12px;font-weight:600;color:#C9D6F0;background:#16294F;border:1px solid var(--card-line);border-radius:99px;padding:4px 10px}
+.subslot .chip b{color:var(--gold);font-weight:700;margin-left:4px}
+
+/* ---------- ranking ---------- */
+.rank-card{grid-column:span 5}
+.rk{display:flex;align-items:center;gap:12px;margin-bottom:9.5px}
+.rk .i{width:16px;font-size:12px;color:var(--mut);font-weight:700;text-align:right;flex-shrink:0}
+.rk .w{width:132px;font-size:13.5px;font-weight:700;flex-shrink:0;letter-spacing:-.01em}
+.rk .bar{flex:1;height:20px;background:#0E1E40;border-radius:6px;overflow:hidden}
+.rk .fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#8A6516,var(--gold));width:0;transition:width 1s cubic-bezier(.2,.7,.3,1)}
+.rk .v{width:38px;font-size:12.5px;font-weight:700;color:var(--gold);text-align:right;font-variant-numeric:tabular-nums;flex-shrink:0}
+.rk:first-of-type .w{color:var(--gold)}
+.rank-foot{margin-top:12px;font-size:11.5px;color:var(--mut)}
+
+/* ---------- pulse ---------- */
+.pulse-card{grid-column:span 7}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--sub);align-items:center}
+.legend .sw{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:-1px}
+.dumb{margin-top:4px}
+.drow{display:flex;align-items:center;gap:14px;height:47px}
+.drow .q{width:106px;font-size:13px;font-weight:700;flex-shrink:0;letter-spacing:-.01em}
+.drow .track{flex:1;position:relative;height:100%}
+.dline{position:absolute;top:50%;height:3px;background:linear-gradient(90deg,var(--pre),var(--gold));border-radius:3px;transform:translateY(-50%);width:0;transition:width .9s cubic-bezier(.2,.7,.3,1)}
+.dot{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;transform:translate(-50%,-50%)}
+.dot.pre{background:var(--pre);box-shadow:0 0 0 3px rgba(111,168,232,.15)}
+.dot.post{background:var(--gold);box-shadow:0 0 0 3px rgba(227,179,65,.15)}
+.dval{position:absolute;top:4px;font-size:11px;font-weight:700;color:var(--sub);transform:translateX(-50%);font-variant-numeric:tabular-nums}
+.dval.post{color:var(--gold)}
+.delta{width:52px;flex-shrink:0;text-align:center;font-size:12px;font-weight:800;color:#7FD8A2;background:#0F2A22;border:1px solid #1E4A38;border-radius:8px;padding:4px 0;font-variant-numeric:tabular-nums}
+.paxis{display:flex;justify-content:space-between;margin-left:120px;margin-right:66px;font-size:10.5px;color:var(--mut);padding-top:2px}
+.pulse-foot{margin-top:12px;font-size:11.5px;color:var(--mut)}
+
+/* ---------- butterfly ---------- */
+.bf-card{grid-column:span 5}
+.bf{display:flex;flex-direction:column;gap:9px;margin-top:2px}
+.bf-head{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:2px}
+.bf-head .h{color:var(--pre)}.bf-head .f{color:var(--gold)}
+.bfrow{display:flex;align-items:center;gap:0}
+.bf-side{flex:1;display:flex;align-items:center;gap:8px}
+.bf-side.l{justify-content:flex-end}
+.bf-side .bar{height:16px;border-radius:5px;width:0;transition:width 1s cubic-bezier(.2,.7,.3,1)}
+.bf-side.l .bar{background:linear-gradient(270deg,#2E5FA3,var(--pre))}
+.bf-side.r .bar{background:linear-gradient(90deg,#8A6516,var(--gold))}
+.bf-side .w{font-size:12.5px;font-weight:700;white-space:nowrap;letter-spacing:-.01em}
+.bf-side.l .w{color:#BFD6F5}.bf-side.r .w{color:#F0DCA8}
+.bf-mid{width:2px;height:26px;background:var(--card-line);flex-shrink:0;margin:0 10px}
+.bf-foot{margin-top:12px;font-size:11.5px;color:var(--mut)}
+
+footer{display:flex;justify-content:space-between;align-items:center;margin-top:18px;font-size:12px;color:var(--mut)}
+footer b{color:var(--sub);font-weight:600}
+
+@media (prefers-reduced-motion:reduce){
+  .ring,.pill.live::before{animation:none}
+  .rk .fill,.dline,.bf-side .bar{transition:none}
+}
+@media (max-width:1080px){
+  .cloud-card,.rank-card,.pulse-card,.bf-card{grid-column:span 12}
+  .counters{gap:22px}.counter .n{font-size:26px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="t">
+      <h1>가치체계 내재화 여정</h1>
+      <div class="s">현대엔지니어링 × REALWORK — 공간과 에너지를 잇는 길 위에서</div>
+    </div>
+    <div class="r">
+      <span class="pill demo">데모 데이터</span>
+      <span class="pill" id="clock">—</span>
+      <span class="pill live">실시간 집계 중</span>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- ============ HERO: journey road ============ -->
+    <section class="card hero">
+      <div class="hero-top">
+        <div class="hero-title">
+          <h2>40차수의 길</h2>
+          <div class="cap">이정표 하나가 워크숍 한 차수입니다 — 마우스를 올려보세요</div>
+        </div>
+        <div class="counters">
+          <div class="counter"><div class="n" data-count="13" data-suffix="차수">0</div><div class="l">완료 · 진행중 14차수</div></div>
+          <div class="counter"><div class="n" data-count="1214" data-suffix="명">0</div><div class="l">누적 참여 인원 (전체 2,659명)</div></div>
+          <div class="counter"><div class="n" data-count="87" data-suffix="팀">0</div><div class="l">팀 정체성 (전체 164팀)</div></div>
+          <div class="counter gold"><div class="n" data-count="1198" data-suffix="건">0</div><div class="l">개인다짐</div></div>
+        </div>
+      </div>
+      <div class="roadbox">
+        <svg id="roadSvg" viewBox="0 0 1300 150" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="goldgrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#8A6516"/><stop offset="1" stop-color="#E3B341"/>
+            </linearGradient>
+          </defs>
+          <path id="roadPath" class="road-base" d="M 20 108 C 240 30, 420 138, 650 84 S 1060 26, 1280 96"/>
+          <path id="roadDone" class="road-done" d=""/>
+          <g id="nodes"></g>
+        </svg>
+        <div class="tip" id="tip"></div>
+      </div>
+      <div class="roadmeta">
+        <span>9/22 마북캠퍼스에서 출발</span>
+        <span>지금 <b>14차수</b> 진행 중 — 대강의실 A · 99명</span>
+        <span>완주까지 <b>26차수</b></span>
+      </div>
+    </section>
+
+    <!-- ============ identity cloud ============ -->
+    <section class="card cloud-card">
+      <div class="hd">
+        <div><h2>우리는 무엇을 만드는 팀인가</h2><div class="cap">87개 팀 정체성의 '지향점' 단어 — 자주 등장할수록 크게</div></div>
+        <span class="note">원문은 운영 페이지에서</span>
+      </div>
+      <div class="cloud-stage" id="cloud"></div>
+      <div class="subslots">
+        <div class="subslot"><div class="k">고유업에 가장 많이 쓰인 말</div><div class="chips"><span class="chip">설계<b>24</b></span><span class="chip">현장<b>17</b></span><span class="chip">구매·조달<b>9</b></span></div></div>
+        <div class="subslot"><div class="k">고유성에 가장 많이 쓰인 말</div><div class="chips"><span class="chip">끝까지<b>15</b></span><span class="chip">치밀함<b>12</b></span><span class="chip">현장 감각<b>10</b></span></div></div>
+      </div>
+    </section>
+
+    <!-- ============ pledge ranking ============ -->
+    <section class="card rank-card">
+      <div class="hd">
+        <div><h2>1,198개의 다짐이 향하는 곳</h2><div class="cap">'무엇을 위해' 실천하는가 — 형용사+명사 상위 8</div></div>
+      </div>
+      <div id="ranks"></div>
+      <div class="rank-foot">Pool 밖 직접 입력 단어 12% — 인재상 Pool 보완의 단서로 수집 중</div>
+    </section>
+
+    <!-- ============ pulse dumbbell ============ -->
+    <section class="card pulse-card">
+      <div class="hd">
+        <div><h2>워크숍은 무엇을 바꿨나</h2><div class="cap">Pulse Check 4문항, 7점 척도 — 응답 1,102명 (응답률 91%)</div></div>
+        <div class="legend"><span><span class="sw" style="background:var(--pre)"></span>워크숍 전</span><span><span class="sw" style="background:var(--gold)"></span>직후</span></div>
+      </div>
+      <div class="dumb" id="dumb"></div>
+      <div class="paxis"><span>1 전혀 그렇지 않다</span><span>4</span><span>7 매우 그렇다</span></div>
+      <div class="pulse-foot">회고식 사전-사후(retrospective pretest) — 응답 라벨 원문: "워크숍 전의 나 / 지금의 나" · 익명, 차수 단위 집계</div>
+    </section>
+
+    <!-- ============ H&F butterfly ============ -->
+    <section class="card bf-card">
+      <div class="hd">
+        <div><h2>이 길에 필요한 사람</h2><div class="cap">인재상 키워드 156건 — 지켜온 모습과 나아갈 모습</div></div>
+      </div>
+      <div class="bf-head"><span class="h">정체성에서 온 키워드</span><span class="f">미래사업에서 온 키워드</span></div>
+      <div class="bf" id="bf"></div>
+      <div class="bf-foot">전 차수 취합 후 인재상 도출의 원천 데이터가 됩니다</div>
+    </section>
+
+  </div>
+
+  <footer>
+    <span><b>REALWORK</b> Workshop Operations</span>
+    <span>30초마다 자동 갱신 · 마지막 갱신 <span id="upd">—</span></span>
+  </footer>
+</div>
+
+<script>
+/* ================= demo data ================= */
+const DONE=13, NOW=14, TOTAL=40;
+const SESSIONS=Array.from({length:TOTAL},(_,i)=>{
+  const n=i+1;
+  const dates=["9/22","9/29","9/30","9/30","10/1","10/2","10/7","10/7","10/8","10/13","10/19","10/20","10/26","11/6","11/9","11/9","11/9","11/10","11/10","11/10","11/11","11/11","11/11","11/17","11/17","11/17","11/18","11/18","11/18","11/20"];
+  return {n, date:dates[i]||"미정", ppl:n<=DONE?[33,150,33,33,150,150,33,33,150,100,120,70,120][i%13]||90:(n===NOW?99:null)};
+});
+const CLOUD=[["신뢰",21],["더 나은 삶",18],["안전",16],["에너지",14],["자부심",12],["기본",11],["미래",10],["사람",9],["완성",9],["가능성",8],["품질",8],["상생",7],["도전",7],["성장",6],["연결",6],["내일",4],["기록",4],["길",3]];
+const RANKS=[["치열한 도전",127],["정교한 기술력",98],["끝까지 해내는 실행",86],["호기심 많은 학습",74],["현장중심의 안전의식",69],["철저한 품질",61],["과감한 시도",55],["배려하는 소통",48]];
+const PULSE=[["가치체계 이해",3.1,5.9],["가치체계 공감",3.8,6.0],["팀 연결",3.3,5.7],["실천 의지",2.9,5.8]];
+const BF=[[["집요한 문제해결",41],["경계를 넘는 도전",44]],[["책임감 있는 실행",36],["유연한 변화대응",38]],[["정교한 검증",29],["과감한 기회포착",31]],[["신뢰를 만드는 파트너십",24],["객관적인 의사결정",27]]];
+
+/* ================= clock ================= */
+function two(n){return String(n).padStart(2,"0")}
+function tick(){const d=new Date();document.getElementById("clock").textContent=`${d.getFullYear()}. ${two(d.getMonth()+1)}. ${two(d.getDate())}  ${two(d.getHours())}:${two(d.getMinutes())}`;document.getElementById("upd").textContent=`${two(d.getHours())}:${two(d.getMinutes())}:${two(d.getSeconds())}`;}
+tick();setInterval(tick,1000);
+
+/* ================= counters (one load sequence) ================= */
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+document.querySelectorAll("[data-count]").forEach(el=>{
+  const target=+el.dataset.count, suf=el.dataset.suffix;
+  if(reduce){el.innerHTML=target.toLocaleString()+`<span class="u">${suf}</span>`;return;}
+  const t0=performance.now(), dur=1300;
+  (function step(t){
+    const p=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-p,3);
+    el.innerHTML=Math.round(target*e).toLocaleString()+`<span class="u">${suf}</span>`;
+    if(p<1)requestAnimationFrame(step);
+  })(t0);
+});
+
+/* ================= journey road ================= */
+const path=document.getElementById("roadPath");
+const L=path.getTotalLength();
+const donePath=document.getElementById("roadDone");
+const nodesG=document.getElementById("nodes");
+const tip=document.getElementById("tip");
+const pts=SESSIONS.map((s,i)=>{
+  const p=path.getPointAtLength(L*(i/(TOTAL-1))*0.985 + L*0.007);
+  return {x:p.x,y:p.y,s};
+});
+/* gold overlay up to current node */
+donePath.setAttribute("d",path.getAttribute("d"));
+const doneLen=L*((NOW-1)/(TOTAL-1))*0.985;
+donePath.style.strokeDasharray=`${doneLen} ${L}`;
+if(!reduce){donePath.style.strokeDashoffset=doneLen;donePath.style.transition="stroke-dashoffset 1.6s cubic-bezier(.3,.6,.3,1)";requestAnimationFrame(()=>requestAnimationFrame(()=>donePath.style.strokeDashoffset="0"));}
+pts.forEach(({x,y,s})=>{
+  const g=document.createElementNS("http://www.w3.org/2000/svg","g");
+  const st=s.n<NOW?"done":(s.n===NOW?"now":"todo");
+  if(st==="now"){
+    const ring=document.createElementNS("http://www.w3.org/2000/svg","circle");
+    ring.setAttribute("cx",x);ring.setAttribute("cy",y);ring.setAttribute("r",9);ring.setAttribute("class","ring");
+    ring.style.transformOrigin=`${x}px ${y}px`;
+    g.appendChild(ring);
+  }
+  const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
+  c.setAttribute("cx",x);c.setAttribute("cy",y);c.setAttribute("r",st==="now"?7.5:(st==="done"?6:4.5));
+  c.setAttribute("class","node"+(st==="done"?" done":st==="now"?" now":""));
+  g.appendChild(c);
+  g.style.cursor="default";
+  g.addEventListener("mousemove",e=>{
+    const box=document.querySelector(".roadbox").getBoundingClientRect();
+    tip.innerHTML=`<b>${s.n}차수</b> · ${s.date}<div class="d">${s.n<NOW?`완료 · ${s.ppl}명 참여`:s.n===NOW?`진행 중 · ${s.ppl}명`:"예정"}</div>`;
+    tip.style.left=(e.clientX-box.left+14)+"px";tip.style.top=(e.clientY-box.top-14)+"px";tip.style.opacity=1;
+  });
+  g.addEventListener("mouseleave",()=>tip.style.opacity=0);
+  nodesG.appendChild(g);
+});
+
+/* ================= word cloud (spiral + collision) ================= */
+(function(){
+  const stage=document.getElementById("cloud");
+  const W=stage.clientWidth||620,H=296,cx=W/2,cy=H/2;
+  const cvs=document.createElement("canvas").getContext("2d");
+  const placed=[];
+  const max=CLOUD[0][1],min=CLOUD[CLOUD.length-1][1];
+  const cols=["#E3B341","#F2F5FB","#8FA2C8","#C9D6F0","#E8762C"];
+  CLOUD.forEach(([w,f],i)=>{
+    const size=16+Math.pow((f-min)/(max-min),.8)*32;
+    cvs.font=`800 ${size}px Pretendard, sans-serif`;
+    const tw=cvs.measureText(w).width+14, th=size*1.15;
+    let x=cx,y=cy,ok=false;
+    for(let t=0;t<3000&&!ok;t+=1){
+      const a=.35*t, r=2.2*Math.sqrt(t);
+      x=cx+r*Math.cos(a)*1.55; y=cy+r*Math.sin(a)*.72;
+      if(x-tw/2<4||x+tw/2>W-4||y-th/2<4||y+th/2>H-4)continue;
+      ok=placed.every(p=>Math.abs(p.x-x)>(p.tw+tw)/2||Math.abs(p.y-y)>(p.th+th)/2);
+    }
+    if(!ok)return;
+    placed.push({x,y,tw,th});
+    const el=document.createElement("span");
+    el.className="cloud-word";el.textContent=w;
+    el.style.cssText=`left:${x}px;top:${y}px;font-size:${size}px;color:${i===0?cols[0]:cols[i%cols.length]};opacity:${i===0?1:.62+ .38*((f-min)/(max-min))}`;
+    stage.appendChild(el);
+  });
+})();
+
+/* ================= ranking bars ================= */
+const rmax=RANKS[0][1];
+document.getElementById("ranks").innerHTML=RANKS.map((r,i)=>
+ `<div class="rk"><span class="i">${i+1}</span><span class="w">${r[0]}</span><span class="bar"><span class="fill" data-w="${(r[1]/rmax*100).toFixed(1)}"></span></span><span class="v">${r[1]}</span></div>`).join("");
+requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll(".fill").forEach(f=>f.style.width=f.dataset.w+"%")));
+
+/* ================= pulse dumbbell ================= */
+const dumb=document.getElementById("dumb");
+const scale=v=>((v-1)/6*100);
+dumb.innerHTML=PULSE.map(([q,a,b])=>{
+  const l=scale(a),r=scale(b);
+  return `<div class="drow"><span class="q">${q}</span><span class="track">
+    <span class="dline" data-l="${l}" data-w="${r-l}" style="left:${l}%"></span>
+    <span class="dot pre" style="left:${l}%"></span><span class="dval" style="left:${l}%">${a.toFixed(1)}</span>
+    <span class="dot post" style="left:${r}%"></span><span class="dval post" style="left:${r}%">${b.toFixed(1)}</span>
+  </span><span class="delta">+${(b-a).toFixed(1)}</span></div>`;
+}).join("");
+requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll(".dline").forEach(d=>d.style.width=d.dataset.w+"%")));
+
+/* ================= butterfly ================= */
+const bmax=Math.max(...BF.flat().map(x=>x[1]));
+document.getElementById("bf").innerHTML=BF.map(([h,f])=>
+ `<div class="bfrow">
+    <span class="bf-side l"><span class="w">${h[0]} ${h[1]}</span><span class="bar" data-w="${(h[1]/bmax*46).toFixed(1)}"></span></span>
+    <span class="bf-mid"></span>
+    <span class="bf-side r"><span class="bar" data-w="${(f[1]/bmax*46).toFixed(1)}"></span><span class="w">${f[1]} ${f[0]}</span></span>
+  </div>`).join("");
+requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll(".bf-side .bar").forEach(b=>b.style.width=b.dataset.w+"%")));
+</script>
+</body>
+</html>

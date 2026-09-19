@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가치체계 내재화 워크숍 — 운영 콘솔</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --navy:#0F2B5E; --navy-deep:#0A1F45; --ink:#1B2130; --sub:#5B6472; --mut:#8A93A3;
+  --paper:#F2F4F8; --card:#FFFFFF; --line:#E2E6EE; --field:#F7F9FC;
+  --gold:#C79A2A; --gold-soft:#F6EED9; --ok:#1E7A3C; --ok-soft:#E9F5EC;
+  --warn:#C0392B; --warn-soft:#FBEAE8; --amber:#E8762C; --amber-soft:#FDEFE3;
+  --blue-soft:#E9F0FB;
+  --r:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Pretendard Variable",Pretendard,-apple-system,"Noto Sans KR",sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;font-size:14px}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;font-size:inherit}
+input,select{font-family:inherit;font-size:inherit;color:inherit}
+
+.app{display:flex;min-height:100vh}
+/* ---------- sidebar ---------- */
+.side{width:224px;flex-shrink:0;background:var(--navy-deep);color:#fff;padding:22px 14px;display:flex;flex-direction:column}
+.brand{padding:0 10px 18px;border-bottom:1px solid #1B3467;margin-bottom:14px}
+.brand .t{font-size:15px;font-weight:800;letter-spacing:-.01em}
+.brand .s{font-size:11px;color:#8FA2C8;margin-top:2px}
+.snav{display:flex;flex-direction:column;gap:3px}
+.snav button{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-size:13.5px;font-weight:600;color:#B9C7E4;text-align:left;transition:background .13s}
+.snav button:hover{background:#132C5B}
+.snav button.on{background:#1B3A73;color:#fff}
+.snav .ico{width:18px;text-align:center;flex-shrink:0}
+.side .me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px 12px;background:#122A57;border-radius:10px}
+.side .me .av{width:30px;height:30px;border-radius:50%;background:var(--gold);color:#0A1F45;font-weight:800;font-size:12px;display:grid;place-items:center}
+.side .me .nm{font-size:12.5px;font-weight:700}
+.side .me .rl{font-size:10.5px;color:#8FA2C8}
+
+/* ---------- main ---------- */
+.main{flex:1;padding:26px 30px 50px;min-width:0}
+.mhead{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+.mhead h1{font-size:20px;font-weight:800;letter-spacing:-.015em}
+.mhead .s{font-size:12.5px;color:var(--sub);margin-top:2px}
+.mhead .acts{display:flex;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:9px 14px;border-radius:9px;transition:opacity .13s}
+.btn.pri{background:var(--navy);color:#fff}
+.btn.sec{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+.btn.sm{font-size:12px;padding:6px 10px;border-radius:7px}
+.btn:hover{opacity:.88}
+
+.view{display:none}.view.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;margin-bottom:16px}
+.card h2{font-size:15px;font-weight:800;letter-spacing:-.01em}
+.card .cap{font-size:12px;color:var(--sub);margin-top:1px}
+.card .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
+
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px}
+.b-run{background:var(--amber-soft);color:#9A4A12}
+.b-done{background:var(--ok-soft);color:var(--ok)}
+.b-fix{background:var(--blue-soft);color:var(--navy)}
+.b-tbd{background:#F0F1F4;color:var(--mut)}
+.b-pilot{background:var(--gold-soft);color:#7A5B0E}
+.b-flag{background:var(--warn-soft);color:var(--warn)}
+.b-ext{background:#fff;border:1.5px dashed var(--gold);color:#7A5B0E}
+
+/* ---------- today cards ---------- */
+.today-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.tcard{background:#fff;border:1.5px solid var(--line);border-radius:var(--r);overflow:hidden}
+.tcard.running{border-color:var(--amber)}
+.tcard .top{padding:14px 16px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start}
+.tcard .top .n{font-size:16px;font-weight:800}
+.tcard .top .d{font-size:11.5px;color:var(--sub);margin-top:2px}
+.tcard .body{padding:13px 16px 15px}
+.qr-row{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.qr{width:74px;height:74px;background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:5px;flex-shrink:0}
+.qr canvas{width:100%;height:100%}
+.qr-meta{min-width:0}
+.qr-meta .u{font-size:11px;color:var(--mut);word-break:break-all;line-height:1.4}
+.qr-meta .btns{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+.toggles{border-top:1px solid var(--line);padding-top:11px;display:flex;flex-direction:column;gap:7px}
+.tg{display:flex;align-items:center;justify-content:space-between}
+.tg .l{font-size:12.5px;font-weight:600;color:#3D4552}
+.sw{width:36px;height:20px;border-radius:99px;background:#D4D9E1;position:relative;transition:background .15s;flex-shrink:0}
+.sw::after{content:"";position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.sw.on{background:var(--ok)}
+.sw.on::after{left:18px}
+.attend{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);margin-top:11px;padding-top:11px}
+.attend .l{font-size:12.5px;font-weight:600;color:#3D4552;flex:1}
+.attend input{width:74px;background:var(--field);border:1.5px solid var(--line);border-radius:8px;padding:6px 9px;font-size:13px;text-align:right}
+.attend .rate{font-size:11.5px;color:var(--mut);width:64px;text-align:right}
+
+/* ---------- table ---------- */
+table{width:100%;border-collapse:collapse}
+th{font-size:11.5px;font-weight:700;color:var(--mut);text-align:left;padding:8px 10px;border-bottom:1.5px solid var(--line);white-space:nowrap}
+td{font-size:13px;padding:10px;border-bottom:1px solid #EEF0F4;vertical-align:middle}
+tr:hover td{background:#FAFBFD}
+td .sub{font-size:11.5px;color:var(--mut)}
+.rowacts{display:flex;gap:4px;opacity:0;transition:opacity .12s}
+tr:hover .rowacts{opacity:1}
+.ract{font-size:11.5px;font-weight:600;color:var(--navy);padding:4px 7px;border-radius:6px}
+.ract:hover{background:var(--blue-soft)}
+.ract.danger{color:var(--warn)}
+.ract.danger:hover{background:var(--warn-soft)}
+tr.hidden-row td{opacity:.42}
+.filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.filters select,.filters input{background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:8px 11px;font-size:13px;outline:none}
+.filters input{width:220px}
+.tabs{display:flex;gap:4px;background:#E9EBF1;border-radius:10px;padding:4px;width:fit-content;margin-bottom:16px}
+.tabs button{font-size:13px;font-weight:700;padding:7px 16px;border-radius:8px;color:var(--sub)}
+.tabs button.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(20,32,64,.1)}
+.kw-chip{display:inline-block;font-size:11.5px;font-weight:600;background:var(--field);border:1px solid var(--line);border-radius:99px;padding:2.5px 9px;margin:1px 2px 1px 0}
+.kw-chip.ext{border-style:dashed;border-color:var(--gold);background:#FDFAF1}
+
+/* ---------- pulse ---------- */
+.pulse-grid{display:grid;grid-template-columns:7fr 5fr;gap:16px}
+.chartbox{position:relative}
+.chartbox svg{width:100%;height:230px;display:block}
+.alert{display:flex;gap:10px;align-items:flex-start;background:var(--warn-soft);border:1px solid #EFC7C2;border-radius:10px;padding:11px 13px;font-size:12.5px;color:#7A2A20;line-height:1.55;margin-top:12px}
+.ptable td,.ptable th{padding:9px 10px}
+.delta-cell{font-weight:800;color:var(--ok)}
+.mini-dumb{position:relative;height:14px;background:var(--field);border-radius:99px;width:130px}
+.mini-dumb .ln{position:absolute;top:50%;height:3px;transform:translateY(-50%);background:linear-gradient(90deg,#6FA8E8,var(--gold));border-radius:3px}
+.mini-dumb .p1,.mini-dumb .p2{position:absolute;top:50%;width:8px;height:8px;border-radius:50%;transform:translate(-50%,-50%)}
+.mini-dumb .p1{background:#6FA8E8}.mini-dumb .p2{background:var(--gold)}
+
+/* ---------- roster ---------- */
+.pending{background:var(--gold-soft);border:1px solid #E8D6A4;border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.pending .t{font-size:13.5px;font-weight:800;color:#6B5312;margin-bottom:9px}
+.pending .row{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:9px;padding:10px 13px;margin-bottom:7px}
+.pending .row:last-child{margin-bottom:0}
+.pending .nm{font-size:13.5px;font-weight:700}
+.pending .ct{font-size:11.5px;color:var(--sub)}
+
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--ink);color:#fff;font-size:13px;font-weight:600;padding:11px 18px;border-radius:10px;opacity:0;transition:all .2s;pointer-events:none;z-index:99}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.helper{font-size:11.5px;color:var(--mut);margin-top:10px;line-height:1.55}
+@media (max-width:1100px){.today-grid{grid-template-columns:1fr}.pulse-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ================ sidebar ================ -->
+  <aside class="side">
+    <div class="brand"><div class="t">워크숍 운영 콘솔</div><div class="s">현대엔지니어링 가치체계 내재화</div></div>
+    <nav class="snav">
+      <button class="on" data-v="today"><span class="ico">☀️</span>오늘의 운영</button>
+      <button data-v="sessions"><span class="ico">🗓</span>차수 관리</button>
+      <button data-v="data"><span class="ico">🗂</span>수집 데이터</button>
+      <button data-v="pulse"><span class="ico">📈</span>Pulse 분석</button>
+      <button data-v="roster"><span class="ico">🏢</span>팀 명부</button>
+    </nav>
+    <div class="me"><div class="av">RW</div><div><div class="nm">리얼워크 운영자</div><div class="rl">admin@realwork</div></div></div>
+  </aside>
+
+  <!-- ================ main ================ -->
+  <main class="main">
+
+    <!-- ========== TODAY ========== -->
+    <section class="view on" id="v-today">
+      <div class="mhead">
+        <div><h1>오늘의 운영 — 11월 9일 (월)</h1><div class="s">마북캠퍼스 대강의실 3방 병행 · 예상 99명 · QR은 방 이름과 색으로 구분됩니다</div></div>
+        <div class="acts"><button class="btn sec" onclick="toast('QR 시트 3장이 인쇄 대기열에 추가되었습니다 (데모)')">🖨 오늘 QR 시트 인쇄</button></div>
+      </div>
+      <div class="today-grid" id="todayGrid"></div>
+      <div class="helper">활동 스위치는 참여자 허브의 잠금과 실시간 연동됩니다 — 모듈이 시작될 때 FT가 켜면, 참여자 화면에서 즉시 열립니다. 실참석 인원은 차수 종료 시 입력해 주세요(응답률 계산의 분모가 됩니다).</div>
+    </section>
+
+    <!-- ========== SESSIONS ========== -->
+    <section class="view" id="v-sessions">
+      <div class="mhead">
+        <div><h1>차수 관리</h1><div class="s">차수 번호·일정·장소는 언제든 수정할 수 있습니다 — 링크는 내부 ID로 발급되어 번호를 바꿔도 유지됩니다</div></div>
+        <div class="acts"><button class="btn sec" onclick="toast('엑셀로 내려받았습니다 (데모)')">⬇ 엑셀</button><button class="btn pri" onclick="toast('차수 추가 화면 (데모)')">+ 차수 추가</button></div>
+      </div>
+      <div class="card" style="padding-top:14px">
+        <table>
+          <thead><tr><th>차수</th><th>일정</th><th>장소</th><th>정원</th><th>예상</th><th>실참석</th><th>FT</th><th>상태</th><th>조회·제출</th><th></th></tr></thead>
+          <tbody id="sessTbody"></tbody>
+        </table>
+        <div class="helper">참석률 = 실참석 ÷ 예상. 파일럿 차수는 현황판 집계에서 기본 제외되며, 설정에서 포함으로 바꿀 수 있습니다.</div>
+      </div>
+    </section>
+
+    <!-- ========== DATA ========== -->
+    <section class="view" id="v-data">
+      <div class="mhead">
+        <div><h1>수집 데이터</h1><div class="s">원문 열람·수정·숨김은 여기서만 — 현황판에는 통계만 노출됩니다</div></div>
+        <div class="acts"><button class="btn pri" onclick="toast('현재 필터 기준으로 엑셀을 내려받았습니다 (데모)')">⬇ 엑셀 다운로드</button></div>
+      </div>
+      <div class="tabs" id="dataTabs">
+        <button class="on" data-t="identity">팀 정체성 <span style="color:var(--mut);font-weight:600">87</span></button>
+        <button data-t="finder">조별 인재상 <span style="color:var(--mut);font-weight:600">156</span></button>
+        <button data-t="pledge">개인다짐 <span style="color:var(--mut);font-weight:600">1,198</span></button>
+      </div>
+      <div class="filters">
+        <select><option>전체 차수</option><option>14차수 (진행 중)</option><option>13차수</option><option>12차수</option></select>
+        <select><option>전체 조직</option><option>플랜트사업본부</option><option>건축사업본부</option><option>구매본부</option></select>
+        <input placeholder="팀·키워드·내용 검색">
+      </div>
+      <div class="card" style="padding-top:14px">
+        <div id="dataBody"></div>
+      </div>
+    </section>
+
+    <!-- ========== PULSE ========== -->
+    <section class="view" id="v-pulse">
+      <div class="mhead">
+        <div><h1>Pulse 분석</h1><div class="s">보고용 결과와 운영 품질관리를 한 화면에서</div></div>
+        <div class="acts"><button class="btn sec" onclick="toast('보고용 차트 이미지를 내려받았습니다 (데모)')">⬇ 보고용 차트</button></div>
+      </div>
+      <div class="pulse-grid">
+        <div class="card">
+          <div class="hd"><div><h2>차수별 평균 상승폭 추이</h2><div class="cap">5문항 평균 델타 — 운영 품질의 조기 경보선</div></div></div>
+          <div class="chartbox"><svg id="trend" viewBox="0 0 640 230"></svg></div>
+          <div class="alert">⚠️ <span><b>9차수(10/8) 상승폭 +1.6</b> — 평균(+2.6) 대비 크게 낮습니다. 당일 150명 대형 차수 · FT 김OO. 운영 리뷰를 권합니다.</span></div>
+        </div>
+        <div class="card">
+          <div class="hd"><div><h2>문항별 결과 (누적)</h2><div class="cap">응답 1,102명 · 응답률 91%</div></div></div>
+          <table class="ptable">
+            <thead><tr><th>문항</th><th>전 → 직후</th><th></th><th>Δ</th></tr></thead>
+            <tbody id="ptbody"></tbody>
+          </table>
+          <div class="helper">응답 라벨 원문 "워크숍 전의 나 / 지금의 나" · 익명 · 차수 단위 집계 · 7점 척도</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="hd"><div><h2>주관식 — 소감 · 1 Change</h2><div class="cap">필수 응답 1,102건 · 소감(마음에 남은 것)과 변화 다짐(1 Change) 이중 코딩</div></div>
+        <button class="btn sec sm" onclick="toast('주관식 전체를 엑셀로 내려받았습니다 (데모)')">⬇ 전체 응답</button></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px">
+          <span class="kw-chip">소감: 팀 정체성 만든 경험 <b style="color:var(--gold)">312</b></span>
+          <span class="kw-chip">소감: 두 문장이 내 일과 연결됨 <b style="color:var(--gold)">268</b></span>
+          <span class="kw-chip">소감: 6,585명이 만든 여정 <b style="color:var(--gold)">154</b></span>
+          <span class="kw-chip">1 Change: 소통 방식 <b style="color:#2E8BE6">296</b></span>
+          <span class="kw-chip">1 Change: 일의 '왜' 설명 <b style="color:#2E8BE6">241</b></span>
+          <span class="kw-chip">1 Change: 협업·응답 습관 <b style="color:#2E8BE6">187</b></span>
+        </div>
+        <table><tbody>
+          <tr><td class="sub" style="width:70px">14차수</td><td>"우리 팀이 하는 일을 처음으로 한 문장으로 만들어봤다는 게 남습니다. 그래서 후배에게 일을 줄 때 '왜'부터 말해보려 합니다."</td></tr>
+          <tr><td class="sub">13차수</td><td>"6,585명이 만든 문장이라는 걸 알고 나니 다르게 읽혔습니다. 그래서 협력사 회신을 미루지 않는 것부터 바꿔보겠습니다."</td></tr>
+          <tr><td class="sub">12차수</td><td>"'잇는 길'이라는 말이 계속 맴돕니다. 그래서 옆 팀에 자료 넘길 때 맥락을 한 줄이라도 붙이려 합니다."</td></tr>
+        </tbody></table>
+      </div>
+    </section>
+
+    <!-- ========== ROSTER ========== -->
+    <section class="view" id="v-roster">
+      <div class="mhead">
+        <div><h1>팀 명부</h1><div class="s">11개 조직 · 45개 실 · 164개 팀 — 참여자 자동완성의 원천</div></div>
+        <div class="acts"><button class="btn sec" onclick="toast('명부를 엑셀로 내려받았습니다 (데모)')">⬇ 엑셀</button><button class="btn pri" onclick="toast('팀 추가 화면 (데모)')">+ 팀 추가</button></div>
+      </div>
+      <div class="pending">
+        <div class="t">명부에 없는 팀 입력 2건 — 확인이 필요합니다</div>
+        <div class="row"><div><div class="nm">플랜트PM팀</div><div class="ct">7차수 · 개인다짐 3건에서 직접 입력됨</div></div><div style="display:flex;gap:6px"><button class="btn sm sec" onclick="toast('기존 팀 병합 선택 화면 (데모)')">기존 팀에 병합</button><button class="btn sm pri" onclick="toast('명부에 추가되었습니다 (데모)')">명부에 추가</button></div></div>
+        <div class="row"><div><div class="nm">신재생TF</div><div class="ct">11차수 · 팀 정체성 1건에서 직접 입력됨</div></div><div style="display:flex;gap:6px"><button class="btn sm sec" onclick="toast('기존 팀 병합 선택 화면 (데모)')">기존 팀에 병합</button><button class="btn sm pri" onclick="toast('명부에 추가되었습니다 (데모)')">명부에 추가</button></div></div>
+      </div>
+      <div class="filters"><input placeholder="팀 이름 검색" id="rosterSearch" oninput="renderRoster()"><select><option>전체 조직</option><option>플랜트사업본부</option><option>건축사업본부</option></select></div>
+      <div class="card" style="padding-top:14px">
+        <table><thead><tr><th>팀</th><th>조직</th><th>실</th><th>인원</th><th>정체성</th><th>다짐</th></tr></thead><tbody id="rosterBody"></tbody></table>
+      </div>
+    </section>
+
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- nav ---------------- */
+document.querySelectorAll(".snav button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".snav button").forEach(x=>x.classList.toggle("on",x===b));
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id==="v-"+b.dataset.v));
+});
+let toastT;
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("on"),2200);}
+
+/* ---------------- fake QR ---------------- */
+function drawQR(cv,seed){
+  const ctx=cv.getContext("2d"),N=21,s=cv.width/N;
+  let r=seed;const rnd=()=>((r=(r*1103515245+12345)&0x7fffffff)/0x7fffffff);
+  ctx.fillStyle="#fff";ctx.fillRect(0,0,cv.width,cv.height);ctx.fillStyle="#0F2B5E";
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(rnd()>.52)ctx.fillRect(x*s,y*s,s*.92,s*.92);}
+  [[0,0],[N-7,0],[0,N-7]].forEach(([px,py])=>{
+    ctx.fillStyle="#0F2B5E";ctx.fillRect(px*s,py*s,7*s,7*s);
+    ctx.fillStyle="#fff";ctx.fillRect((px+1)*s,(py+1)*s,5*s,5*s);
+    ctx.fillStyle="#0F2B5E";ctx.fillRect((px+2)*s,(py+2)*s,3*s,3*s);
+  });
+}
+
+/* ---------------- today cards ---------------- */
+const TODAY=[
+ {n:"14차수",room:"대강의실 A",ppl:33,run:true, url:"go.realwork.kr/hec/a7Kq2",tg:[1,1,0,0,0],att:""},
+ {n:"15차수",room:"대강의실 B",ppl:33,run:false,url:"go.realwork.kr/hec/Xm3Rp",tg:[1,0,0,0,0],att:""},
+ {n:"16차수",room:"대강의실 C",ppl:33,run:false,url:"go.realwork.kr/hec/Tz8Wn",tg:[0,0,0,0,0],att:""},
+];
+const ACT=["시험공부 자료","팀 정체성","조별 인재상","개인다짐","Pulse Check"];
+document.getElementById("todayGrid").innerHTML=TODAY.map((c,i)=>`
+ <div class="tcard ${c.run?"running":""}">
+   <div class="top"><div><div class="n">${c.n} · ${c.room}</div><div class="d">예상 ${c.ppl}명 · FT 박OO</div></div>
+   ${c.run?'<span class="badge b-run">진행 중</span>':'<span class="badge b-fix">시작 전</span>'}</div>
+   <div class="body">
+     <div class="qr-row">
+       <div class="qr"><canvas width="120" height="120" id="qr${i}"></canvas></div>
+       <div class="qr-meta">
+         <div class="u">${c.url}</div>
+         <div class="btns">
+           <button class="btn sm sec" onclick="toast('허브 링크가 복사되었습니다')">링크 복사</button>
+           <button class="btn sm sec" onclick="toast('카톡 공지문이 복사되었습니다 — 붙여넣기만 하세요')">카톡 공지문</button>
+         </div>
+       </div>
+     </div>
+     <div class="toggles">${ACT.map((a,j)=>`
+       <div class="tg"><span class="l">${a}</span><button class="sw ${c.tg[j]?"on":""}" onclick="this.classList.toggle('on');toast('${a} — 참여자 허브에 ${c.tg[j]?'':''}반영되었습니다')"></button></div>`).join("")}
+     </div>
+     <div class="attend"><span class="l">실참석 인원</span><input placeholder="종료 시" oninput="this.nextElementSibling.textContent=this.value?('참석률 '+Math.round(this.value/${c.ppl}*100)+'%'):''"><span class="rate"></span></div>
+   </div>
+ </div>`).join("");
+TODAY.forEach((c,i)=>drawQR(document.getElementById("qr"+i),7919*(i+3)));
+
+/* ---------------- sessions table ---------------- */
+const SESS=[
+ ["P1","9/22 (화)","대강의실",33,33,31,"김OO","pilot",[92,88]],
+ ["1","9/29 (화)","포럼관",150,150,142,"김OO","done",[95,93]],
+ ["2","9/30 (수)","대강의실 A",33,33,33,"박OO","done",[100,97]],
+ ["3","9/30 (수)","대강의실 B",33,33,30,"이OO","done",[91,90]],
+ ["4","10/1 (목)","포럼관",150,150,147,"김OO","done",[98,90]],
+ ["9","10/8 (목)","포럼관",150,150,138,"김OO","done",[92,72]],
+ ["13","11/6 (금)","포럼관",150,120,116,"박OO","done",[97,94]],
+ ["14","11/9 (월)","대강의실 A",33,33,null,"박OO","run",[64,null]],
+ ["15","11/9 (월)","대강의실 B",33,33,null,"이OO","fix",[null,null]],
+ ["16","11/9 (월)","대강의실 C",33,33,null,"최OO","fix",[null,null]],
+ ["29","11/20 (금)","포럼관",150,110,null,"김OO","fix",[null,null]],
+ ["37","미정","포럼관",110,null,null,"미정","tbd",[null,null]],
+];
+const ST={pilot:['b-pilot','파일럿'],done:['b-done','완료'],run:['b-run','진행 중'],fix:['b-fix','확정'],tbd:['b-tbd','미정']};
+document.getElementById("sessTbody").innerHTML=SESS.map(s=>`
+ <tr><td><b>${s[0]}</b></td><td>${s[1]}</td><td>${s[2]}</td><td>${s[3]}</td><td>${s[4]??"—"}</td>
+ <td>${s[5]??"—"}${s[5]?`<div class="sub">${Math.round(s[5]/s[4]*100)}%</div>`:""}</td>
+ <td>${s[6]}</td><td><span class="badge ${ST[s[7]][0]}">${ST[s[7]][1]}</span></td>
+ <td>${s[8][0]!=null?`자료 ${s[8][0]}% · Pulse ${s[8][1]!=null?s[8][1]+"%":"—"}`:"—"}</td>
+ <td><div class="rowacts"><button class="ract" onclick="toast('차수 편집 (데모)')">편집</button><button class="ract" onclick="toast('이 차수의 QR·링크 4종 (데모)')">QR·링크</button></div></td></tr>`).join("")
+ +`<tr><td colspan="10" style="text-align:center;color:var(--mut);font-size:12px;padding:12px">… 전체 41행 (파일럿 1 + 정규 40) 중 12행 표시 — 데모 …</td></tr>`;
+
+/* ---------------- data browser ---------------- */
+const D_ID=`<table><thead><tr><th>차수</th><th>팀</th><th>완성 문장</th><th>제출</th><th></th></tr></thead><tbody>
+ <tr><td>14</td><td><b>플랜트기획팀</b><div class="sub">플랜트사업본부</div></td><td>"에너지의 다음 길을 먼저 걷는 우리는, 숫자 너머를 읽는 눈으로 일하며, 회사의 내일을 만든다."</td><td>10:42</td><td><div class="rowacts"><button class="ract">수정</button><button class="ract">차수 재지정</button><button class="ract danger">숨김</button></div></td></tr>
+ <tr><td>13</td><td><b>구매조달1팀</b><div class="sub">구매본부</div></td><td>"자재의 길을 잇는 우리는, 한 번 더 확인하는 집요함으로 일하며, 멈추지 않는 현장을 만든다."</td><td>11/6</td><td><div class="rowacts"><button class="ract">수정</button><button class="ract">차수 재지정</button><button class="ract danger">숨김</button></div></td></tr>
+ <tr><td>9</td><td><b>플랜트토건공조설계팀</b><div class="sub">플랜트사업본부</div> <span class="badge b-flag">복수 제출 3·9차수</span></td><td>"공간의 뼈대를 세우는 우리는, 도면 한 장에도 책임을 담는 DNA로 일하며, 무너지지 않는 일상을 만든다."</td><td>10/8</td><td><div class="rowacts"><button class="ract">3차수 본과 비교</button><button class="ract danger">숨김</button></div></td></tr>
+ <tr class="hidden-row"><td>8</td><td><b>—</b></td><td>"ㅋㅋㅋㅋㅋㅋㅋ" <span class="badge b-flag">숨김됨</span></td><td>10/8</td><td><div class="rowacts"><button class="ract">복원</button></div></td></tr>
+</tbody></table>
+<div class="helper">복수 제출 팀은 두 문장을 모두 보존합니다 — 게시용 카드 제작 시 어느 본을 쓸지 고객사와 협의 후 대표본을 지정하세요.</div>`;
+
+const D_FN=`<table><thead><tr><th>차수</th><th>소속 팀</th><th>Heritage 키워드</th><th>Future 키워드</th><th>선정 이유</th><th></th></tr></thead><tbody>
+ <tr><td>14</td><td><b>플랜트기획팀</b></td><td><span class="kw-chip">집요한 + 문제해결</span></td><td><span class="kw-chip">경계를 넘는 + 도전</span></td><td class="sub" style="max-width:230px">한 번의 실수가 큰 사고로 이어질 수 있어, 끝까지 확인하는 집요함이 우리를 지켜왔습니다. 앞으로는…</td><td><div class="rowacts"><button class="ract">수정</button><button class="ract danger">숨김</button></div></td></tr>
+ <tr><td>13</td><td><b>건축견적팀</b></td><td><span class="kw-chip">완결성 있는 + 전문성</span></td><td><span class="kw-chip ext">데이터에 밝은 + 판단</span></td><td class="sub" style="max-width:230px">견적은 회사의 첫 약속입니다. 앞으로는 감이 아니라 데이터로…</td><td><div class="rowacts"><button class="ract">수정</button><button class="ract danger">숨김</button></div></td></tr>
+</tbody></table>
+<div class="helper">점선 칩 = Pool 밖 직접 입력. 자주 등장하는 Pool 밖 단어는 인재상 Pool 보완 후보입니다.</div>`;
+
+const D_PL=`<table><thead><tr><th>차수</th><th>소속 팀</th><th>다짐</th><th>제출</th><th></th></tr></thead><tbody>
+ <tr><td>14</td><td>플랜트기획팀</td><td><span class="kw-chip">과감한 + 도전</span>을 위해, 나는 안 될 것 같은 일도 일단 검토해보겠습니다</td><td>13:05</td><td><div class="rowacts"><button class="ract danger">숨김</button></div></td></tr>
+ <tr><td>14</td><td>구매조달1팀</td><td><span class="kw-chip">신속한 + 소통</span>을 위해, 나는 협력사 회신을 24시간 안에 하겠습니다</td><td>13:04</td><td><div class="rowacts"><button class="ract danger">숨김</button></div></td></tr>
+ <tr><td>13</td><td>안전진단팀</td><td><span class="kw-chip ext">타협 없는 + 안전</span>을 위해, 나는 바빠도 점검 항목을 건너뛰지 않겠습니다</td><td>11/6</td><td><div class="rowacts"><button class="ract danger">숨김</button></div></td></tr>
+</tbody></table>
+<div class="helper">개인다짐은 익명(팀만 기록) · 총 1,198건 — 차수 필터로 나눠 보세요. 현황판에는 키워드 집계만 노출됩니다.</div>`;
+
+const DATA={identity:D_ID,finder:D_FN,pledge:D_PL};
+function setData(t){document.getElementById("dataBody").innerHTML=DATA[t];
+  document.querySelectorAll("#dataTabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));}
+document.querySelectorAll("#dataTabs button").forEach(b=>b.onclick=()=>setData(b.dataset.t));
+setData("identity");
+
+/* ---------------- pulse trend ---------------- */
+(function(){
+  const svg=document.getElementById("trend");
+  const data=[2.5,2.7,2.6,2.8,2.4,2.7,2.9,2.5,1.6,2.6,2.8,2.7,2.9]; // 13 sessions, dip at #9
+  const W=640,H=230,pl=40,pr=16,pt=18,pb=30;
+  const x=i=>pl+(W-pl-pr)*(i/(data.length-1));
+  const y=v=>pt+(H-pt-pb)*(1-(v-1)/(3.5-1));
+  let g="";
+  [1.5,2,2.5,3].forEach(v=>{g+=`<line x1="${pl}" y1="${y(v)}" x2="${W-pr}" y2="${y(v)}" stroke="#EDF0F5" stroke-width="1"/><text x="${pl-8}" y="${y(v)+4}" font-size="10" fill="#8A93A3" text-anchor="end">+${v}</text>`;});
+  g+=`<line x1="${pl}" y1="${y(2.6)}" x2="${W-pr}" y2="${y(2.6)}" stroke="#C79A2A" stroke-width="1.2" stroke-dasharray="4 4"/><text x="${W-pr}" y="${y(2.6)-6}" font-size="10" fill="#C79A2A" text-anchor="end">전체 평균 +2.6</text>`;
+  g+=`<polyline fill="none" stroke="#0F2B5E" stroke-width="2.5" stroke-linejoin="round" points="${data.map((v,i)=>x(i)+","+y(v)).join(" ")}"/>`;
+  data.forEach((v,i)=>{
+    const warn=v<2.0;
+    g+=`<circle cx="${x(i)}" cy="${y(v)}" r="${warn?6:4}" fill="${warn?"#C0392B":"#0F2B5E"}" stroke="#fff" stroke-width="1.6"/>`;
+    g+=`<text x="${x(i)}" y="${H-10}" font-size="10" fill="#8A93A3" text-anchor="middle">${i+1}</text>`;
+    if(warn)g+=`<text x="${x(i)}" y="${y(v)-12}" font-size="11" font-weight="800" fill="#C0392B" text-anchor="middle">+${v.toFixed(1)}</text>`;
+  });
+  g+=`<text x="${W/2}" y="${H-0}" font-size="0" fill="#8A93A3"></text>`;
+  svg.innerHTML=g;
+})();
+
+/* pulse table */
+const PQ=[["가치체계 이해",3.1,5.9],["가치체계 공감",3.8,6.0],["팀 연결",3.3,5.7],["실천 의지",2.9,5.8]];
+document.getElementById("ptbody").innerHTML=PQ.map(([q,a,b])=>{
+  const l=(a-1)/6*100,r=(b-1)/6*100;
+  return `<tr><td style="font-weight:700">${q}</td><td style="white-space:nowrap">${a.toFixed(1)} → <b style="color:var(--gold)">${b.toFixed(1)}</b></td>
+  <td><div class="mini-dumb"><span class="ln" style="left:${l}%;width:${r-l}%"></span><span class="p1" style="left:${l}%"></span><span class="p2" style="left:${r}%"></span></div></td>
+  <td class="delta-cell">+${(b-a).toFixed(1)}</td></tr>`;}).join("");
+
+/* ---------------- roster ---------------- */
+const ROSTER=[
+ ["플랜트토건공조설계팀","플랜트사업본부","플랜트공간설계실",164,"2건 ⚑",214],
+ ["플랜트전계장설계팀","플랜트사업본부","플랜트시스템설계실",143,"1건",118],
+ ["화공프로세스설계팀","플랜트사업본부","플랜트기본설계실",117,"1건",96],
+ ["건축견적팀","건축사업본부","건축견적실",37,"1건",31],
+ ["구매조달1팀","구매본부","구매조달실",30,"1건",26],
+ ["안전진단팀","안전품질본부","안전품질지원실",38,"1건",29],
+ ["인재운영팀","경영지원본부","비즈니스지원실",22,"1건",19],
+ ["감사1팀","감사실","—",7,"—",0],
+ ["정보보호부문","사장직속","—",10,"—",0],
+ ["EOSE팀","플랜트사업본부","본부 직속",1,"—",0],
+];
+function renderRoster(){
+  const q=(document.getElementById("rosterSearch").value||"").toLowerCase();
+  document.getElementById("rosterBody").innerHTML=ROSTER
+    .filter(r=>!q||r[0].toLowerCase().includes(q))
+    .map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}명</td><td>${r[4]}</td><td>${r[5]||"—"}</td></tr>`).join("")
+   +`<tr><td colspan="6" style="text-align:center;color:var(--mut);font-size:12px;padding:12px">… 전체 164팀 중 10팀 표시 — 데모 …</td></tr>`;
+}
+renderRoster();
+</script>
+</body>
+</html>
