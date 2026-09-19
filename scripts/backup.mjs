@@ -8,7 +8,7 @@ import { adminClient } from "./_client.mjs";
 
 const TABLES = [
   "sessions", "teams", "team_identities", "team_identity_revisions",
-  "finder_submissions", "pledges", "pulses", "material_views", "admin_emails",
+  "finder_submissions", "team_promises", "team_promise_revisions", "pulses", "material_views", "admin_emails",
 ];
 // app_settings에는 현황판 토큰이 있어 JSON에만 남기고 엑셀에는 넣지 않는다
 const db = adminClient();

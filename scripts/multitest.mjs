@@ -33,10 +33,11 @@ try {
   const op = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, { auth: { persistSession: false } });
   const login = await op.auth.signInWithPassword({ email: process.env.ADMIN_EMAIL, password: process.env.ADMIN_PASSWORD });
   if (login.error) throw new Error("운영자 로그인 실패: " + login.error.message);
-  const { data: teams } = await svc.from("teams").select("id, name").eq("status", "active").order("headcount", { ascending: false }).limit(30);
+  const { data: teams } = await svc.from("teams").select("id, name").eq("status", "active").order("headcount", { ascending: false }).limit(1000);
+  if (PER_ROOM > teams.length) throw new Error(`실천약속은 팀당 1건이라 방당 인원은 최대 ${teams.length}명까지입니다`);
 
   console.log(`\n다차수 병행 테스트 — ${BASE} · 3개 방 × ${PER_ROOM}명\n\n[1] 운영자 3명이 각자 방의 활동을 동시에 연다 (방마다 4개 토글을 한꺼번에)`);
-  const acts = ["identity", "finder", "pledge", "pulse"];
+  const acts = ["identity", "finder", "promise", "pulse"];
   const toggled = await Promise.all(rooms.flatMap((r) => acts.map((a) => op.rpc("set_session_lock", { p_id: r.id, p_activity: a, p_open: true }))));
   check(toggled.every((t) => !t.error), "동시 토글 12건 모두 성공", toggled.find((t) => t.error)?.error.message);
   const { data: after } = await svc.from("sessions").select("display_no, locks").in("id", rooms.map((r) => r.id));
@@ -44,7 +45,7 @@ try {
   await Promise.all(rooms.map((r) => op.from("sessions").update({ status: "running" }).eq("id", r.id)));
   await sleep(2300); // 허브 캐시
 
-  const ids = await discoverActions(BASE, ["identity", "pledge", "pulse"].map((a) => `/s/${rooms[0].slug}/${a}`));
+  const ids = await discoverActions(BASE, ["identity", "promise", "pulse"].map((a) => `/s/${rooms[0].slug}/${a}`));
   const lat = [], errors = [];
   const act = async (name, slug, activity, cookie, payload) => {
     const t0 = performance.now();
@@ -58,24 +59,24 @@ try {
     }
   };
 
-  console.log(`\n[2] 3개 방에서 ${PER_ROOM * 3}명이 동시에 입장·제출 (10초에 걸쳐 시작, 1인 = 다짐 + Pulse)`);
+  console.log(`\n[2] 3개 방에서 ${PER_ROOM * 3}명이 동시에 입장·제출 (10초에 걸쳐 시작, 1인 = 팀 실천약속 + Pulse)`);
   const t0 = performance.now();
   await Promise.all(rooms.flatMap((r, ri) => Array.from({ length: PER_ROOM }, async (_, i) => {
     await sleep((10_000 * (ri * PER_ROOM + i)) / (PER_ROOM * 3));
     const hub = await fetch(`${BASE}/s/${r.slug}`);
     await hub.text();
     const cookie = cookiesOf(hub);
-    await act("submitPledge", r.slug, "pledge", cookie, { id: randomUUID(), team: { id: teams[i % teams.length].id, name: "x" }, adj: "과감한", noun: "도전", action: `${tag} ${r.room}방 ${i}` });
+    await act("submitPromise", r.slug, "promise", cookie, { id: randomUUID(), team: { id: teams[i].id, name: "x" }, leader: `리더는 ${tag} ${r.room}방 ${i} 약속을 지킵니다`, member: "팀원은 막히면 바로 공유합니다", routine: "우리는 매주 금요일 회고를 합니다" });
     await act("submitPulse", r.slug, "pulse", cookie, { id: randomUUID(), scores: [3, 6, 4, 6, 3, 5, 2, 6], openText: `${tag} ${r.room}방 ${i}번 — 열 글자 이상의 응답입니다.` });
   })));
   const wall = (performance.now() - t0) / 1000;
   check(errors.length === 0, `에러 0건 (${lat.length}건 제출 / ${wall.toFixed(1)}초, p95 ${pct(lat, 95).toFixed(0)}ms)`, [...new Set(errors)].slice(0, 3).join(" | "));
   for (const r of rooms) {
-    const [pl, pu] = [await countIn("pledges", r.id), await countIn("pulses", r.id)];
-    check(pl === PER_ROOM && pu === PER_ROOM, `${r.room}방: 다짐 ${pl}/${PER_ROOM} · Pulse ${pu}/${PER_ROOM} — 방 사이에 섞임·유실 없음`);
+    const [pl, pu] = [await countIn("team_promises", r.id), await countIn("pulses", r.id)];
+    check(pl === PER_ROOM && pu === PER_ROOM, `${r.room}방: 실천약속 ${pl}/${PER_ROOM} · Pulse ${pu}/${PER_ROOM} — 방 사이에 섞임·유실 없음`);
   }
-  const { data: leak } = await svc.from("pledges").select("action, session_id").like("action", `${tag} %`);
-  check(leak.every((p) => p.action.includes(`${rooms.find((r) => r.id === p.session_id)?.room}방`)), "모든 다짐이 자기 방 차수에 귀속 (slug가 유일한 차수 진실)");
+  const { data: leak } = await svc.from("team_promises").select("leader, session_id").like("leader", `리더는 ${tag} %`);
+  check(leak.length === PER_ROOM * 3 && leak.every((p) => p.leader.includes(`${rooms.find((r) => r.id === p.session_id)?.room}방`)), "모든 실천약속이 자기 방 차수에 귀속 (slug가 유일한 차수 진실)");
 
   console.log("\n[3] 대형 팀 분할 입과 — 같은 팀이 A·B 두 방에서 각각 정체성 제출 (R5)");
   const big = teams[0];
@@ -92,9 +93,11 @@ try {
   const closed = await op.rpc("close_session", { p_id: rooms[2].id });
   check(!closed.error, "C방 차수 종료(운영자)", closed.error?.message);
   await sleep(2300);
-  const late = await act("submitPledge", rooms[2].slug, "pledge", await dev(rooms[2].slug), { id: randomUUID(), team: { id: big.id, name: "x" }, adj: "과감한", noun: "도전", action: `${tag} 종료 후` });
+  const lateTeam = teams[teams.length - 1]; // 어느 방에도 제출하지 않은 팀
+  const vow = (who) => ({ id: randomUUID(), team: { id: lateTeam.id, name: "x" }, leader: `리더는 ${tag} ${who}`, member: "팀원은 공유합니다", routine: "우리는 회고합니다" });
+  const late = await act("submitPromise", rooms[2].slug, "promise", await dev(rooms[2].slug), vow("종료 후 제출"));
   check(!late.ok && late.code === "locked", "종료된 C방에 뒤늦은 제출 → 서버 거부");
-  const still = await act("submitPledge", rooms[0].slug, "pledge", await dev(rooms[0].slug), { id: randomUUID(), team: { id: big.id, name: "x" }, adj: "과감한", noun: "도전", action: `${tag} A방 계속` });
+  const still = await act("submitPromise", rooms[0].slug, "promise", await dev(rooms[0].slug), vow("A방 계속"));
   check(still.ok, "A방은 영향 없이 계속 제출됨");
 
   console.log("\n[5] 현황판·콘솔 집계");
@@ -112,7 +115,9 @@ try {
   if (sids.length) {
     const { data: idents } = await svc.from("team_identities").select("id").in("session_id", sids);
     await svc.from("team_identity_revisions").delete().in("identity_id", (idents ?? []).map((x) => x.id));
-    for (const t of ["team_identities", "finder_submissions", "pledges", "pulses", "material_views"]) await svc.from(t).delete().in("session_id", sids);
+    const { data: proms } = await svc.from("team_promises").select("id").in("session_id", sids);
+    await svc.from("team_promise_revisions").delete().in("promise_id", (proms ?? []).map((x) => x.id));
+    for (const t of ["team_identities", "finder_submissions", "team_promises", "pulses", "material_views"]) await svc.from(t).delete().in("session_id", sids);
     await svc.from("sessions").delete().in("id", sids);
     const { count } = await svc.from("sessions").select("*", { count: "exact", head: true }).like("slug", `MT${tag}%`);
     console.log(`\n정리 완료 (임시 차수 잔여 ${count}건)`);

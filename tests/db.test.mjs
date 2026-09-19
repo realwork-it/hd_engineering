@@ -134,4 +134,8 @@ assert.equal((await one("select dashboard_data() d")).d.pulse.people, 100);
 await db.exec("update sessions set locks = locks || '{\"pulse\":true}' where slug='s9'");
 await one("select submit_pulse($1,'s9','{1,7,2,6,3,5,4,4}','진행 중 차수의 첫 Pulse 응답입니다') r", [U()]);
 assert.equal((await one("select dashboard_data() d")).d.pulse.people, 170);
+
+// ---- 단어 정리 규칙 (_word_stem) ----
+for (const [raw, want] of [['회의를','회의'],['공유합니다.','공유'],['시작하고','시작'],['끝냅니다',''],['읽습니다',''],['바로',''],['역할을','역할'],['권한','권한'],['피드백은','피드백'],['리스크','리스크'],['논의','논의'],['금요일마다','금요일'],['"안전"','안전']])
+  assert.equal((await one("select _word_stem($1) w", [raw])).w, want, `_word_stem(${raw})`);
 console.log("ALL PASS", both.map(b=>b.status));

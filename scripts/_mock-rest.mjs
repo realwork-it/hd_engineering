@@ -5,7 +5,7 @@ export const MOCK_USER = {
 };
 export const REST_TABLES = new Set([
   "sessions", "session_stats", "teams", "team_identities", "team_identity_revisions",
-  "finder_submissions", "pledges", "pulses", "material_views", "admin_emails",
+  "finder_submissions", "team_promises", "team_promise_revisions", "pulses", "material_views", "admin_emails",
 ]);
 const FK = { sessions: "session_id", teams: "team_id" };
 const OPS = { eq: "=", neq: "<>", gt: ">", gte: ">=", lt: "<", lte: "<=", like: "like", ilike: "ilike" };
@@ -97,7 +97,7 @@ export async function seedVisualCases(db) {
   await db.query("insert into team_identities (id, session_id, team_id, work, dna, goal) values (gen_random_uuid(),$1,$2,$3,$4,$5) on conflict do nothing",
     [s03, big, "공간의 뼈대를 세우고 설비의 숨길을 설계하는", "도면 한 장에도 끝까지 책임을 담는 집요한 DNA", "어떤 환경에서도 무너지지 않는 안전한 일상"]);
   await db.query("insert into team_identities (id, session_id, team_id, team_name_raw, work, dna, goal, hidden) values (gen_random_uuid(),$1,$2,'플랜트PM팀','ㅋㅋㅋㅋ','ㅋㅋ','ㅋㅋㅋ',true)", [s14, pm]);
-  await db.query("insert into pledges (id, session_id, team_id, team_name_raw, adj, noun, action) values (gen_random_uuid(),$1,$2,'플랜트PM팀','신속한','소통','협력사 문의에 24시간 안에 회신')", [s14, pm]);
+  await db.query("insert into team_promises (id, session_id, team_id, team_name_raw, leader, member, routine) values (gen_random_uuid(),$1,$2,'플랜트PM팀','리더는 협력사 문의에 24시간 안에 회신하도록 우선순위를 정리해 줍니다','팀원은 막히는 일이 생기면 혼자 끌지 않고 그날 안에 공유합니다','우리는 매주 월요일 아침 15분 동안 이번 주 리스크를 함께 점검합니다')", [s14, pm]);
   await db.query("update finder_submissions set why_heritage='한 번의 실수가 큰 사고로 이어질 수 있는 일이기에, 끝까지 확인하는 집요함이 우리를 지켜왔습니다. 도면과 현장이 다를 때 다시 가서 확인하는 사람이 결국 회사를 지켰습니다.', why_future='에너지 전환의 길에서는 익숙한 방식 너머로 나아가는 사람이 필요합니다.', f_adj='데이터에 밝은', f_adj_custom=true where id in (select id from finder_submissions limit 3)");
   await db.query("update sessions set ft_name = (array['김OO','박OO','이OO'])[1 + (substr(slug,5)::int % 3)] where slug like 'live%'");
   await db.query("update pulses set q1_post=3, q2_post=4, q3_post=3, q4_post=3 where session_id=(select id from sessions where slug='live09')");

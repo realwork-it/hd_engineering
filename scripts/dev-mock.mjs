@@ -33,21 +33,21 @@ await db.query("insert into app_settings values ('pool_adj',$1),('pool_noun',$2)
 // demo01: 전부 열림 / demo02: 초기 상태(시험공부만)
 await db.exec(`
 insert into sessions (slug, display_no, date, location, room, status, locks) values
- ('demo01','7','2026-10-07','대강의실','B','confirmed','{"study":true,"identity":true,"finder":true,"pledge":true,"pulse":true}'),
+ ('demo01','7','2026-10-07','대강의실','B','confirmed','{"study":true,"identity":true,"finder":true,"promise":true,"pulse":true}'),
  ('demo02','14','2026-11-09','대강의실','A','confirmed', default);`);
 
 // 현황판 데모: 40차수(1~13 완료, 14 진행 중) + 가상 제출.  http://localhost:3000/dashboard?k=demo
 await db.query("insert into app_settings values ('dashboard_token', '\"demo\"')");
 {
   const rows = parse(readFileSync(`${root}supabase/seed/seed_sessions.csv`, "utf8"), { columns: true, bom: true });
-  const open = '{"study":true,"identity":true,"finder":true,"pledge":true,"pulse":true}';
+  const open = '{"study":true,"identity":true,"finder":true,"promise":true,"pulse":true}';
   for (const [i, r] of rows.entries()) {
     const [location, ...rest] = r.location.split(" ");
     const status = i < 13 ? "done" : i === 13 ? "running" : r.status;
     await db.query(
       "insert into sessions (slug, display_no, date, location, room, capacity, expected, actual, status, locks) values ($1,$2,$3,$4,$5,$6,$6,$7,$8,$9)",
       [`live${String(i + 1).padStart(2, "0")}`, r.display_no, r.date || null, location, rest.join(" ") || null,
-       Number(r.capacity), i < 13 ? Math.round(Number(r.capacity) * 0.93) : null, status, i < 14 ? open : '{"study":true,"identity":false,"finder":false,"pledge":false,"pulse":false}'],
+       Number(r.capacity), i < 13 ? Math.round(Number(r.capacity) * 0.93) : null, status, i < 14 ? open : '{"study":true,"identity":false,"finder":false,"promise":false,"pulse":false}'],
     );
   }
   const adj = JSON.parse(pool("POOL_ADJ")), noun = JSON.parse(pool("POOL_NOUN"));
@@ -63,10 +63,14 @@ await db.query("insert into app_settings values ('dashboard_token', '\"demo\"')"
   for (let i = 0; i < 400; i++)
     await db.query("insert into finder_submissions (id, session_id, team_id, h_adj, h_noun, f_adj, f_noun) values (gen_random_uuid(),$1,$2,$3,$4,$5,$6) on conflict do nothing",
       [sess[i % sess.length].id, tms[(i * 7 + Math.floor(i / sess.length)) % tms.length].id, skew(adj.slice(0, 14)), skew(noun.slice(0, 12)), skew(adj.slice(6, 22).reverse()), skew(noun.slice(4, 18).reverse())]);
+  // 팀 실천약속 (팀당 1건)
+  const L = ["결정의 배경을 먼저 설명합니다", "회의를 정시에 시작하고 끝냅니다", "현장의 이야기를 먼저 듣습니다", "우선순위를 분명히 알려줍니다", "피드백을 그날 안에 줍니다"];
+  const M = ["막히면 바로 공유합니다", "회의 전에 자료를 미리 읽습니다", "서로의 일정을 존중합니다", "안전 수칙을 끝까지 지킵니다", "모르는 것은 바로 질문합니다"];
+  const R = ["매주 금요일 회고를 합니다", "월요일 아침 리스크 점검을 합니다", "회의록을 당일 공유합니다", "분기마다 현장을 함께 방문합니다", "도면 검토를 교차로 확인합니다"];
+  for (const [i, t] of tms.entries())
+    await db.query("insert into team_promises (id, session_id, team_id, leader, member, routine) values (gen_random_uuid(),$1,$2,$3,$4,$5) on conflict do nothing",
+      [sess[i % sess.length].id, t.id, "리더는 " + skew(L), "팀원은 " + skew(M), "우리는 " + skew(R)]);
   for (let i = 0; i < 600; i++) {
-    const custom = rnd() < 0.12;
-    await db.query("insert into pledges (id, session_id, team_id, adj, adj_custom, noun, action) values (gen_random_uuid(),$1,$2,$3,$4,$5,'데모 실천')",
-      [sess[i % sess.length].id, tms[i % tms.length].id, custom ? "타협 없는" : skew(adj.slice(0, 30)), custom, skew(noun.slice(0, 30))]);
     const pre = () => 2 + Math.floor(rnd() * 3), post = () => 5 + Math.floor(rnd() * 3);
     if (i % 10 < 9) await db.query("insert into pulses values (gen_random_uuid(),$1,$2,$3,$4,$5,$6,$7,$8,$9,'데모 주관식 응답입니다. 열 글자 이상.')",
       [sess[i % sess.length].id, pre(), post(), pre() + 1, post(), pre(), post(), pre(), post()]);
@@ -119,7 +123,7 @@ const server = http.createServer(async (req, res) => {
       await db.query("update sessions set locks = locks || $1::jsonb where slug = $2", [body, lock[1]]);
       return send(200, (await db.query("select locks from sessions where slug=$1", [lock[1]])).rows[0]);
     }
-    // 개발 편의: 테이블 덤프  GET /_dev/table/pledges
+    // 개발 편의: 테이블 덤프  GET /_dev/table/team_promises
     const table = url.pathname.match(/^\/_dev\/table\/(\w+)$/);
     if (table) return send(200, (await db.query(`select * from ${table[1]}`)).rows);
     send(404, { message: `mock: unsupported ${req.method} ${url.pathname}` });
