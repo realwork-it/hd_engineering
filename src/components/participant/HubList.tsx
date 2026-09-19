@@ -28,10 +28,12 @@ export function HubList({ slug, initialLocks }: { slug: string; initialLocks: Lo
     }
     const timer = setInterval(poll, POLL_MS);
     document.addEventListener("visibilitychange", poll); // 화면 복귀 시 즉시 반영
+    window.addEventListener("pageshow", poll); // 뒤로 가기(bfcache)로 돌아온 경우
     return () => {
       alive = false;
       clearInterval(timer);
       document.removeEventListener("visibilitychange", poll);
+      window.removeEventListener("pageshow", poll);
     };
   }, [slug]);
 

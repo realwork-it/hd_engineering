@@ -47,6 +47,7 @@ export default async function PrintPage({ params }: PageProps<"/admin/sessions/[
         <PrintButton />
       </div>
       {sheets.map(({ s, url, svg }) => {
+        const where = [s.location, s.room].filter(Boolean).join(" ") || "장소 미정";
         const [color, colorName] = ROOM_COLORS[(s.room ?? "").trim().toUpperCase()] ?? DEFAULT_COLOR;
         return (
           <section className="pr-sheet" key={s.id} style={{ borderColor: color }}>
@@ -54,8 +55,9 @@ export default async function PrintPage({ params }: PageProps<"/admin/sessions/[
               현대엔지니어링 가치체계 내재화 워크숍
             </div>
             <div className="pr-no">{sessionLabel(s.display_no)}</div>
-            <div className="pr-where">
-              {[s.location, s.room].filter(Boolean).join(" ") || "장소 미정"}
+            {/* 긴 장소명(예: '마북캠퍼스 대강의실 A')이 두 줄로 넘어가 시트 아래가 잘리지 않도록 글자를 줄인다 */}
+            <div className="pr-where" style={{ fontSize: where.length > 14 ? "24pt" : where.length > 9 ? "31pt" : undefined }}>
+              {where}
             </div>
             <div className="pr-date">{dateLabel(s.date) ?? "일정 미정"}</div>
             <div className="pr-qr" style={{ borderColor: color }} dangerouslySetInnerHTML={{ __html: svg }} />

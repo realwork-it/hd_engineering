@@ -25,8 +25,10 @@
 .ad-me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px 12px;background:#122A57;border-radius:10px}
 .ad-me .av{width:30px;height:30px;border-radius:50%;background:var(--gold);color:#0A1F45;font-weight:800;font-size:12px;display:grid;place-items:center;flex-shrink:0}
 .ad-me .nm{font-size:12.5px;font-weight:700}
-.ad-me .rl{font-size:10.5px;color:#8FA2C8;word-break:break-all}
-.ad-me .out{margin-left:auto;font-size:11px;color:#8FA2C8;text-decoration:underline;flex-shrink:0}
+.ad-me > div:nth-child(2){min-width:0;flex:1}
+.ad-me .rl{font-size:10.5px;color:#8FA2C8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} /* 긴 이메일이 글자 단위로 꺾이던 문제 */
+.ad-me{flex-wrap:wrap}
+.ad-me .out{flex-basis:100%;text-align:left;margin:2px 0 0 40px;font-size:11px;color:#8FA2C8 !important;text-decoration:underline}
 
 /* main */
 .ad-main{flex:1;padding:26px 30px 50px;min-width:0}

@@ -4,6 +4,7 @@ import { dateLabel, sessionLabel } from "@/lib/participant/types";
 import { TodayCard } from "@/components/admin/TodayCard";
 import { DashboardShare } from "@/components/admin/DashboardShare";
 import { DayPicker } from "@/components/admin/DayPicker";
+import { AutoRefresh } from "@/components/admin/AutoRefresh";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,7 @@ export default async function TodayPage({ searchParams }: PageProps<"/admin">) {
 
   return (
     <>
+      <AutoRefresh seconds={15} />
       <div className="ad-mhead">
         <div>
           <h1>{isToday ? "오늘의 운영" : "운영일 미리보기"} — {dateLabel(date)}</h1>

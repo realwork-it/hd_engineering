@@ -100,4 +100,22 @@ assert.equal((await one("select status from teams where id=$1", [pend])).status,
 assert.equal((await one("select hidden from team_identities where team_id=$1", [pend])).hidden, true);
 assert.equal((await one("select count(*)::int c from pledges where team_id=$1", [pend])).c, 0);
 await assert.rejects(one("select merge_team($1,$2)", [pend, teamA]), /미등록 팀이 아닙니다/);
+
+// ---- 하드닝: 원자적 토글 · 병합 팀 따라가기 · 차수 종료 · 인원 잠정 집계 ----
+const sid1 = (await one("select id from sessions where slug='s1'")).id;
+await db.exec(`update sessions set locks='{"study":true,"identity":false,"finder":false,"pledge":false,"pulse":false}' where slug='s1'`);
+await Promise.all(['identity','finder','pledge','pulse'].map((a) => one("select set_session_lock($1,$2,true) r", [sid1, a])));
+assert.deepEqual((await one("select locks from sessions where slug='s1'")).locks, { study: true, identity: true, finder: true, pledge: true, pulse: true }, "동시 토글 4건이 서로 덮어쓰지 않음");
+await assert.rejects(one("select set_session_lock($1,'nope',true)", [sid1]), /unknown activity/);
+// 병합된 팀: 기억된 id·이름으로 제출해도 병합 대상(A팀)에 붙는다
+const r1 = (await one("select submit_pledge($1,'s1',$2,null,'집요한','도전','병합 후 id로','devX1') r", [U(), pend])).r;
+const r2 = (await one("select submit_pledge($1,'s1',null,'신재생tf','집요한','도전','병합 후 이름으로','devX2') r", [U()])).r;
+assert.equal(r1.status, 'created'); assert.equal(r2.status, 'created');
+assert.equal((await one("select count(*)::int c from pledges where device_key in ('devX1','devX2') and team_id=$1", [teamA])).c, 2);
+assert.equal((await one("select count(*)::int c from teams where status='pending'")).c, 0, "병합된 이름으로 새 미등록 팀이 다시 생기지 않음");
+await one("select close_session($1)", [sid1]);
+assert.deepEqual(await one("select status, locks->>'pledge' p, locks->>'study' st from sessions where slug='s1'"), { status: 'done', p: 'false', st: 'true' });
+assert.equal((await one("select submit_pledge($1,'s1',$2,null,'집요한','도전','종료 후 제출','devX3') r", [U(), teamA])).r.status, 'locked');
+await db.exec("insert into sessions(slug,display_no,status,capacity) values ('s9','9','running',70)");
+assert.equal((await one("select dashboard_data() d")).d.people, 170, "예상·실참석이 없으면 정원으로 잠정 집계 (100 + 70)");
 console.log("ALL PASS", both.map(b=>b.status));

@@ -1,20 +1,22 @@
 // 로컬 개발·E2E용 목(mock) Supabase — 실제 키 없이 참여자 화면을 띄운다.
 //   npm run dev:mock  →  http://localhost:3000/s/demo01
 // supabase/migrations 전체와 시드 CSV를 임베디드 Postgres(PGlite)에 올리고,
-// 앱이 쓰는 PostgREST 호출(rpc/*, teams, app_settings)만 흉내 낸다. 운영자 로그인(Auth)은 지원하지 않는다.
+// PostgREST(rpc·테이블 조회/수정)와 Auth를 필요한 만큼만 흉내 낸다 (scripts/_mock-rest.mjs).
+//   운영 콘솔: http://localhost:54399/_dev/login (가짜 운영자로 로그인 → /admin)  ·  현황판: /dashboard?k=demo
 import http from "node:http";
 import { spawn } from "node:child_process";
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { PGlite } from "@electric-sql/pglite";
 import { parse } from "csv-parse/sync";
+import { MOCK_USER, REST_TABLES, loginResponse, restTable, seedVisualCases } from "./_mock-rest.mjs";
 
 const PORT = 54399;
 const root = fileURLToPath(new URL("..", import.meta.url));
 const db = new PGlite();
 
 await db.exec(`create role anon; create role authenticated; create role service_role; create schema auth;
-create function auth.jwt() returns jsonb language sql stable as $$ select '{}'::jsonb $$;`);
+create function auth.jwt() returns jsonb language sql stable as $$ select '{"email":"demo@mock.local"}'::jsonb $$;`);
 for (const f of readdirSync(`${root}supabase/migrations`).sort())
   await db.exec(readFileSync(`${root}supabase/migrations/${f}`, "utf8").replace("create extension if not exists pgcrypto;", ""));
 
@@ -71,6 +73,8 @@ await db.query("insert into app_settings values ('dashboard_token', '\"demo\"')"
   }
 }
 
+await seedVisualCases(db);
+
 const SET_RETURNING = new Set(["get_session_hub"]);
 const lit = (v) => (Array.isArray(v) ? `{${v.join(",")}}` : v);
 
@@ -92,8 +96,17 @@ const server = http.createServer(async (req, res) => {
       if (SET_RETURNING.has(rpc[1])) return send(200, (await db.query(`select * from ${call}`, params)).rows);
       return send(200, (await db.query(`select ${call} as r`, params)).rows[0].r);
     }
-    if (url.pathname === "/rest/v1/teams")
-      return send(200, (await db.query("select id, name, org_name, sil_name from teams where status='active' order by name")).rows);
+    // 가짜 Auth — 실제 계정 없이 운영 콘솔을 본다:  http://localhost:54399/_dev/login
+    if (url.pathname === "/_dev/login") return loginResponse(res);
+    if (url.pathname === "/auth/v1/user") return send(200, MOCK_USER);
+    if (url.pathname === "/auth/v1/logout") return send(204, {});
+    if (url.pathname === "/rest/v1/app_settings" && req.method === "POST") {
+      for (const row of [].concat(JSON.parse(body)))
+        await db.query("insert into app_settings values ($1,$2) on conflict (key) do update set value = excluded.value", [row.key, JSON.stringify(row.value)]);
+      return send(201, []);
+    }
+    const rest = url.pathname.match(/^\/rest\/v1\/(\w+)$/);
+    if (rest && REST_TABLES.has(rest[1])) return await restTable(db, rest[1], req, url, body, res);
     if (url.pathname === "/rest/v1/app_settings") {
       const eq = url.searchParams.get("key")?.match(/^eq.(.+)$/)?.[1];
       const rows = (await db.query("select key, value from app_settings")).rows

@@ -12,7 +12,8 @@ const slug = "RH" + randomUUID().replace(/-/g, "").slice(0, 8);
 const MARK = "리허설" + slug.slice(2, 6); // 원문 노출 검사용 표식
 let pass = 0, failed = 0;
 const check = (ok, label, detail = "") => {
-  ok ? pass++ : failed++;
+  if (ok) pass++;
+  else failed++;
   console.log(`${ok ? "  ✓" : "  ✗ FAIL"} ${label}${detail ? ` — ${detail}` : ""}`);
 };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

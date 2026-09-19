@@ -64,9 +64,9 @@ export function TeamBox({
             <div className="pt-sugg-empty">명부에 없는 팀이에요 — 아래를 눌러 그대로 입력할 수 있어요</div>
           )}
           {!exact && (
-            <button type="button" className="pt-sugg-item" onClick={() => pick({ id: null, name: query })}>
+            <button type="button" className="pt-sugg-item pt-sugg-raw" onClick={() => pick({ id: null, name: query })}>
+              <div className="org">{hits.length > 0 ? "위 목록에 우리 팀이 없다면" : "명부에 없는 팀 · 운영진이 확인합니다"}</div>
               <div className="nm">“{query}” 그대로 입력</div>
-              <div className="org">명부에 없는 팀 · 운영진이 확인합니다</div>
             </button>
           )}
         </div>

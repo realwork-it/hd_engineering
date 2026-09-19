@@ -15,7 +15,8 @@
     "dev:mock": "node scripts/dev-mock.mjs",
     "loadtest": "node scripts/loadtest.mjs",
     "backup": "node scripts/backup.mjs",
-    "rehearsal": "node scripts/rehearsal.mjs"
+    "rehearsal": "node scripts/rehearsal.mjs",
+    "multitest": "node scripts/multitest.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

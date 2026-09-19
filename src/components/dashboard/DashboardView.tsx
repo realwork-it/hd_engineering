@@ -50,7 +50,7 @@ export function DashboardView({ initial }: { initial: DashboardData }) {
   const regular = data.sessions;
   const done = regular.filter((s) => s.status === "done").length;
   const running = data.sessions.filter((s) => s.status === "running");
-  const pct = (n: number, total: number) => Math.round((n / total) * 100);
+  const pct = (n: number, total: number) => Math.min(100, Math.round((n / total) * 100));
   const custom = data.pledges ? Math.round((data.pledges_custom / data.pledges) * 100) : 0;
   const responseRate = data.people ? Math.min(100, Math.round((data.pulse.n / data.people) * 100)) : null;
 
@@ -288,21 +288,23 @@ function Cloud({ words }: { words: Pair[] }) {
     if (!el) return;
     const layout = () => {
       if (!words.length) return setPlaced([]);
-      const W = el.clientWidth || 620, H = 296, cx = W / 2, cy = H / 2;
+      const W = el.clientWidth || 620, H = el.clientHeight || 296, cx = W / 2, cy = H / 2; // TV 레이아웃에서는 카드 높이에 맞춰 늘어난다
       const ctx = document.createElement("canvas").getContext("2d")!;
       const boxes: { x: number; y: number; tw: number; th: number }[] = [];
       const max = words[0][1], min = words[words.length - 1][1];
+      const stretch = Math.sqrt(W / H / (620 / 296));
       const norm = (f: number) => (max === min ? 0.5 : (f - min) / (max - min));
       const out: Placed[] = [];
       words.forEach(([w, f], i) => {
-        const size = 16 + Math.pow(norm(f), 0.8) * 32;
+        const k = Math.min(2, Math.max(1, Math.sqrt((W * H) / (620 * 296)))); // 큰 화면(TV)에서는 무대 넓이에 비례해 키운다
+        const size = (16 + Math.pow(norm(f), 0.8) * 32) * k;
         ctx.font = `800 ${size}px Pretendard, sans-serif`;
-        const tw = ctx.measureText(w).width + 14, th = size * 1.15;
+        const tw = ctx.measureText(w).width + 14 * k, th = size * 1.15;
         let x = cx, y = cy, ok = false;
         for (let t = 0; t < 3000 && !ok; t++) {
-          const a = 0.35 * t, r = 2.2 * Math.sqrt(t);
-          x = cx + r * Math.cos(a) * 1.55;
-          y = cy + r * Math.sin(a) * 0.72;
+          const a = 0.35 * t, r = 2.2 * k * Math.sqrt(t);
+          x = cx + r * Math.cos(a) * 1.55 * stretch; // 나선의 가로·세로 비를 무대 비율에 맞춘다
+          y = cy + (r * Math.sin(a) * 0.72) / stretch;
           if (x - tw / 2 < 4 || x + tw / 2 > W - 4 || y - th / 2 < 4 || y + th / 2 > H - 4) continue;
           ok = boxes.every((p) => Math.abs(p.x - x) > (p.tw + tw) / 2 || Math.abs(p.y - y) > (p.th + th) / 2);
         }

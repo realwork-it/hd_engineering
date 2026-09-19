@@ -22,9 +22,17 @@ function refresh() {
 export async function setLock(id: string, activity: Activity, open: boolean): Promise<Result> {
   if (!ACTIVITIES.includes(activity)) return fail("알 수 없는 활동입니다.");
   const db = await adminDb();
-  const { data: cur, error: readErr } = await db.from("sessions").select("locks").eq("id", id).single();
-  if (readErr || !cur) return fail("차수를 찾을 수 없습니다.");
-  const { error } = await db.from("sessions").update({ locks: { ...cur.locks, [activity]: open } }).eq("id", id);
+  // DB 함수가 jsonb를 원자적으로 갱신한다 — 두 사람이 같은 차수의 다른 활동을 동시에 켜도 서로 덮어쓰지 않는다
+  const { error } = await db.rpc("set_session_lock", { p_id: id, p_activity: activity, p_open: open });
+  if (error) return fail(error.message);
+  refresh();
+  return { ok: true };
+}
+
+/** 차수 종료 = 상태 '완료' + 시험공부를 뺀 모든 활동 잠금 (종료 후 뒤늦은 제출 방지) */
+export async function closeSession(id: string): Promise<Result> {
+  const db = await adminDb();
+  const { error } = await db.rpc("close_session", { p_id: id });
   if (error) return fail(error.message);
   refresh();
   return { ok: true };
