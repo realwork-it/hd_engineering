@@ -118,4 +118,9 @@ assert.deepEqual(await one("select status, locks->>'pledge' p, locks->>'study' s
 assert.equal((await one("select submit_pledge($1,'s1',$2,null,'집요한','도전','종료 후 제출','devX3') r", [U(), teamA])).r.status, 'locked');
 await db.exec("insert into sessions(slug,display_no,status,capacity) values ('s9','9','running',70)");
 assert.equal((await one("select dashboard_data() d")).d.people, 170, "예상·실참석이 없으면 정원으로 잠정 집계 (100 + 70)");
+// Pulse 응답률 분모: 완료(s1=100)만. 진행 중인 s9(70)는 Pulse 응답이 없으므로 제외 → 응답이 들어오면 포함
+assert.equal((await one("select dashboard_data() d")).d.pulse.people, 100);
+await db.exec("update sessions set locks = locks || '{\"pulse\":true}' where slug='s9'");
+await one("select submit_pulse($1,'s9','{1,7,2,6,3,5,4,4}','진행 중 차수의 첫 Pulse 응답입니다') r", [U()]);
+assert.equal((await one("select dashboard_data() d")).d.pulse.people, 170);
 console.log("ALL PASS", both.map(b=>b.status));

@@ -4,6 +4,7 @@ import { fetchAll } from "@/lib/admin-data";
 
 export const PULSE_LABELS = ["가치체계 이해", "가치체계 공감", "팀 연결", "실천 의지"];
 export const ALERT_GAP = 1.0; // 전체 평균 대비 이만큼 낮으면 경보 (SPEC §5.3)
+export const ALERT_MIN_N = 15; // 응답이 이보다 적은 차수는 평균이 우연에 크게 흔들린다 → 경보를 띄우지 않는다
 
 type Row = {
   session_id: string; open_text: string; created_at: string;
@@ -13,6 +14,8 @@ type Row = {
 export type PulseSession = {
   id: string; no: string; date: string | null; place: string; ft: string | null;
   people: number | null; n: number; delta: number; alert: boolean;
+  /** 평균은 기준 미달이지만 응답 수가 적어 경보를 보류한 차수 */
+  lowN: boolean;
 };
 export type OpenText = { session_no: string; text: string; created_at: string; session_id: string };
 
@@ -23,7 +26,7 @@ export async function loadPulse() {
   const db = await adminDb();
   const [rows, { data: sess }] = await Promise.all([
     fetchAll<Row>(db, "pulses", "session_id, open_text, created_at, q1_pre, q1_post, q2_pre, q2_post, q3_pre, q3_post, q4_pre, q4_post"),
-    db.from("sessions").select("id, display_no, date, location, room, ft_name, actual, expected, status").neq("status", "canceled"),
+    db.from("sessions").select("id, display_no, date, location, room, ft_name, actual, expected, capacity, status").neq("status", "canceled"),
   ]);
   const meta = new Map((sess ?? []).map((s) => [s.id, s]));
   const live = rows.filter((r) => meta.has(r.session_id));
@@ -37,7 +40,9 @@ export async function loadPulse() {
     const d = mean(rs.map(delta));
     return {
       id, no: s.display_no, date: s.date, place: [s.location, s.room].filter(Boolean).join(" "), ft: s.ft_name,
-      people: s.actual ?? s.expected, n: rs.length, delta: d, alert: d < overall - ALERT_GAP,
+      people: s.actual ?? s.expected ?? s.capacity, n: rs.length, delta: d,
+      alert: d < overall - ALERT_GAP && rs.length >= ALERT_MIN_N,
+      lowN: d < overall - ALERT_GAP && rs.length < ALERT_MIN_N,
     };
   }).sort((a, b) => (a.date ?? "9").localeCompare(b.date ?? "9") || Number(a.no) - Number(b.no));
 
@@ -48,7 +53,10 @@ export async function loadPulse() {
     return { label, pre, post };
   });
 
-  const people = sessions.reduce((a, s) => a + (s.people ?? 0), 0);
+  // 응답률 분모 — 현황판(dashboard_data)과 같은 기준: 완료된 차수 + Pulse 응답이 들어온 진행 중 차수
+  const people = (sess ?? [])
+    .filter((s) => s.status === "done" || (s.status === "running" && bySession.has(s.id)))
+    .reduce((a, s) => a + (s.actual ?? s.expected ?? s.capacity ?? 0), 0);
   const texts: OpenText[] = live.map((r) => ({
     session_id: r.session_id, session_no: meta.get(r.session_id)!.display_no, text: r.open_text, created_at: r.created_at,
   }));

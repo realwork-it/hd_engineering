@@ -52,7 +52,7 @@ export function DashboardView({ initial }: { initial: DashboardData }) {
   const running = data.sessions.filter((s) => s.status === "running");
   const pct = (n: number, total: number) => Math.min(100, Math.round((n / total) * 100));
   const custom = data.pledges ? Math.round((data.pledges_custom / data.pledges) * 100) : 0;
-  const responseRate = data.people ? Math.min(100, Math.round((data.pulse.n / data.people) * 100)) : null;
+  const responseRate = data.pulse.people ? Math.min(100, Math.round((data.pulse.n / data.pulse.people) * 100)) : null;
 
   if (denied)
     return (

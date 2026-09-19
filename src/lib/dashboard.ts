@@ -17,7 +17,8 @@ export type DashboardData = {
   ranks: Pair[]; heritage: Pair[]; future: Pair[];
   pledge_flow: { adj: Pair[]; noun: Pair[]; links: [adj: string, noun: string, count: number][] };
   hf_words: [word: string, heritage: number, future: number][];
-  pulse: { n: number; q: [pre: number, post: number][] };
+  /** people = 응답률 분모 (완료 차수 + Pulse 응답이 들어온 진행 중 차수의 인원) */
+  pulse: { n: number; people: number; q: [pre: number, post: number][] };
 };
 
 // R16 분모 (SPEC §0)
