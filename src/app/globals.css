@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+/* SPEC.md §9 디자인 토큰 */
+@theme {
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui,
+    "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+
+  /* 참여자·콘솔 (라이트) */
+  --color-paper: #f2f4f8;
+  --color-card: #ffffff;
+  --color-navy: #0f2b5e;
+  --color-deep: #0a1f45;
+  --color-gold: #c79a2a;
+  --color-gold-soft: #f6eed9;
+  --color-orange: #e8762c;
+  --color-ok: #1e7a3c;
+  --color-warn: #c0392b;
+  --color-line: #e2e6ee;
+  --color-field: #f7f9fc;
+
+  /* 현황판 (다크) */
+  --color-dash-bg: #0a1730;
+  --color-dash-card: #11224a;
+  --color-dash-gold: #e3b341;
+  --color-dash-pre: #6fa8e8;
+  --color-dash-grid: #1a2c55;
+
+  --radius-card: 16px;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-deep);
+  font-family: var(--font-sans);
+}
