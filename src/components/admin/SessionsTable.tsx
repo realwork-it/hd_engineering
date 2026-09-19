@@ -47,7 +47,7 @@ export function SessionsTable({
               취소된 차수 {canceled}건 보기
             </label>
           )}
-          <a className="ad-btn sec" href="/admin/sessions/export">⬇ 엑셀</a>
+          <a className="ad-btn sec" href="/admin/sessions/export" title="현재 차수 정보를 엑셀로 내려받습니다 — 고쳐서 그대로 다시 올릴 수 있는 업로드 양식입니다">⬇ 차수표 내려받기</a>
           <button className="ad-btn sec" onClick={() => setUploading(true)}>⬆ 일정 엑셀 업로드</button>
           <button className="ad-btn pri" onClick={() => setEditing({ id: null, input: EMPTY })}>+ 차수 추가</button>
         </div>
