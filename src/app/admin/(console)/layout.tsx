@@ -1,5 +1,7 @@
+import "../admin.css";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { SideNav } from "@/components/admin/SideNav";
 import { signOut } from "../login/actions";
 
 export default async function ConsoleLayout({ children }: LayoutProps<"/admin">) {
@@ -11,15 +13,23 @@ export default async function ConsoleLayout({ children }: LayoutProps<"/admin">)
   if (!isAdmin) redirect("/admin/login");
 
   return (
-    <div className="flex flex-1 flex-col">
-      <header className="flex items-center justify-between bg-deep px-6 py-3 text-white">
-        <span className="font-bold">HEC 워크숍 운영 콘솔</span>
-        <form action={signOut} className="flex items-center gap-3 text-sm">
-          <span className="text-white/70">{user.email}</span>
-          <button type="submit" className="rounded-lg border border-white/30 px-3 py-1">로그아웃</button>
+    <div className="ad-app">
+      <aside className="ad-side">
+        <div className="ad-brand">
+          <div className="t">워크숍 운영 콘솔</div>
+          <div className="s">현대엔지니어링 가치체계 내재화</div>
+        </div>
+        <SideNav />
+        <form action={signOut} className="ad-me">
+          <div className="av">RW</div>
+          <div>
+            <div className="nm">리얼워크 운영자</div>
+            <div className="rl">{user.email}</div>
+          </div>
+          <button type="submit" className="out">로그아웃</button>
         </form>
-      </header>
-      <div className="flex-1 p-6">{children}</div>
+      </aside>
+      <main className="ad-main">{children}</main>
     </div>
   );
 }
