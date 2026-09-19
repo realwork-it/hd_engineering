@@ -14,6 +14,10 @@ type Form = { team: TeamPick | null; adj: Word | null; noun: Word | null; action
 const EMPTY: Form = { team: null, adj: null, noun: null, action: "" };
 
 // "[형용사+명사]를 위해" — 조사는 마지막 단어의 받침으로 (R10과 같은 규칙)
+// 부록 B: "[형용사+명사]를 위해, 나는 ___을 하겠습니다" — 실천 내용은 명사형으로 받고 을/를을 자동 선택
+const pledgeSentence = (adj: string | undefined, noun: string | undefined, action: string) =>
+  `${pairWithJosa(adj, noun)} 위해, 나는 ${action}${jEul(action)} 하겠습니다.`;
+
 function pairWithJosa(adj?: string, noun?: string): string {
   const pair = [adj, noun].filter(Boolean).join(" ");
   return pair ? `${pair}${jEul(pair)}` : "";
@@ -38,7 +42,7 @@ export function PledgeForm({
     return (
       <Success
         title="저장했습니다" slug={slug} onEdit={f.edit}
-        recap={<>“{pairWithJosa(f.done.adj?.word, f.done.noun?.word)} 위해, 나는 {f.done.action} 하겠습니다.”</>}
+        recap={<>“{pledgeSentence(f.done.adj?.word, f.done.noun?.word, f.done.action)}”</>}
       >
         당신의 다짐이 2,659명의 다짐에 더해졌어요.
       </Success>
@@ -66,9 +70,9 @@ export function PledgeForm({
         </div>
 
         <div className="pt-fgroup">
-          <label className="pt-f-label" htmlFor="pl-action">실천 내용</label>
+          <label className="pt-f-label" htmlFor="pl-action">실천 내용 <span className="pt-f-help">명사로 끝맺어 주세요</span></label>
           <textarea id="pl-action" className="pt-f-area" maxLength={80}
-            placeholder="예) 안 될 것 같은 일도 일단 해보겠습니다"
+            placeholder="예) 안 될 것 같은 일도 일단 시도"
             value={v.action} onChange={(e) => f.update({ action: e.target.value })} />
           <div className="pt-count">{v.action.length}/80</div>
         </div>
@@ -77,7 +81,7 @@ export function PledgeForm({
           <div className="cap">완성될 나의 다짐</div>
           <div className="sent">
             {pair ? <span className="slot">{pair}</span> : <><span className="slot empty">형용사 명사</span>를</>} 위해, 나는<br />
-            {action ? <span className="slot">{action}</span> : <span className="slot empty">실천 내용</span>} 하겠습니다.
+            {action ? <><span className="slot">{action}{jEul(action)}</span> 하겠습니다.</> : <><span className="slot empty">실천 내용</span>을 하겠습니다.</>}
           </div>
         </div>
       </div>
