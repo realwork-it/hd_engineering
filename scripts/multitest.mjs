@@ -101,7 +101,7 @@ try {
   const { data: dash } = await svc.rpc("dashboard_data");
   const mine = dash.sessions.filter((s) => s.no.startsWith("MT"));
   check(mine.filter((s) => s.status === "running").length === 2 && mine.filter((s) => s.status === "done").length === 1, "현황판: 진행 중 2개 + 완료 1개로 표시");
-  check(mine.every((s) => s.people === PER_ROOM && s.provisional), "실참석 미입력 → 대상자 인원으로 잠정 집계(잠정 표시)");
+  check(mine.every((s) => s.people === PER_ROOM && s.provisional), "실참석 미입력 → 대상 인원으로 잠정 집계(잠정 표시)");
   const { data: stats } = await op.from("session_stats").select("*").in("session_id", rooms.map((r) => r.id));
   check(stats.length === 3 && stats.every((s) => s.pulses === PER_ROOM), "콘솔 차수 관리의 차수별 제출 건수 일치");
 } catch (e) {

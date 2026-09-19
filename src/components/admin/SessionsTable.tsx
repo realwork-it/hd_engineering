@@ -56,7 +56,7 @@ export function SessionsTable({
         <div className="ad-tablewrap">
           <table>
             <thead>
-              <tr><th>차수</th><th>일정</th><th>장소</th><th>대상자</th><th>실참석</th><th>FT</th><th>상태</th><th>조회·제출</th><th /></tr>
+              <tr><th>차수</th><th>일정</th><th>장소</th><th>대상 인원</th><th>실참석</th><th>FT</th><th>상태</th><th>조회·제출</th><th /></tr>
             </thead>
             <tbody>
               {visible.map((s) => {
@@ -96,7 +96,7 @@ export function SessionsTable({
           </table>
         </div>
         <div className="ad-helper">
-          전체 {sessions.length - canceled}개 차수. 참석률 = 실참석 ÷ 대상자 인원.
+          전체 {sessions.length - canceled}개 차수. 참석률 = 실참석 ÷ 대상 인원.
           차수는 삭제하지 않고 &apos;취소&apos; 상태로 바꿉니다.
         </div>
       </div>
@@ -146,7 +146,7 @@ function EditModal({
           <div><label htmlFor="f-ft">FT</label><input id="f-ft" value={v.ft_name} onChange={set("ft_name")} maxLength={40} /></div>
           <div><label htmlFor="f-loc">장소</label><input id="f-loc" value={v.location} onChange={set("location")} placeholder="예) 대강의실, 포럼관" maxLength={40} /></div>
           <div><label htmlFor="f-room">강의실</label><input id="f-room" value={v.room} onChange={set("room")} placeholder="예) A, B, C" maxLength={20} /></div>
-          <div><label htmlFor="f-exp">대상자 인원</label><input id="f-exp" inputMode="numeric" value={v.expected} onChange={set("expected")} /></div>
+          <div><label htmlFor="f-exp">대상 인원</label><input id="f-exp" inputMode="numeric" value={v.expected} onChange={set("expected")} /></div>
           <div><label htmlFor="f-act">실참석</label><input id="f-act" inputMode="numeric" value={v.actual} onChange={set("actual")} placeholder="종료 후 입력" /></div>
           <div className="full"><label htmlFor="f-note">메모</label><textarea id="f-note" value={v.note} onChange={set("note")} maxLength={500} /></div>
         </div>

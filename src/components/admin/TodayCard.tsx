@@ -59,7 +59,7 @@ export function TodayCard({ session: s, hubUrl, notice }: { session: SessionRow;
         <div>
           <div className="n">{sessionLabel(s.display_no)} · {[s.location, s.room].filter(Boolean).join(" ") || "장소 미정"}</div>
           <div className="d">
-            {s.expected != null ? `대상자 ${s.expected}명` : "대상자 인원 미입력"}
+            {s.expected != null ? `대상 인원 ${s.expected}명` : "대상 인원 미입력"}
             {" · "}FT {s.ft_name ?? "미정"}
           </div>
         </div>

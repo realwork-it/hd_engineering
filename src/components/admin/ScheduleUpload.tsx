@@ -46,7 +46,7 @@ export function ScheduleUpload({ onClose, onDone }: { onClose: () => void; onDon
         </div>
 
         <input type="file" accept=".xlsx,.csv" disabled={pending} onChange={(e) => pick(e.target.files?.[0])} aria-label="일정 파일 선택" />
-        <div className="ad-helper">읽는 열: display_no(차수) · date(일정) · location(장소) · room(강의실) · expected(대상자 인원) · status(상태) · FT · note(메모)</div>
+        <div className="ad-helper">양식(첫 줄 열 이름): display_no · date · location · capacity · 대상 인원 · status · FT — note(메모)·room(강의실) 열은 있어도 되고 없어도 됩니다. capacity(정원)는 참고값으로만 저장됩니다.</div>
 
         {pending && !preview && <div className="ad-helper">파일을 읽는 중…</div>}
         {errors.length > 0 && (

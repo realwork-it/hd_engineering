@@ -31,7 +31,7 @@ const STATUS: Record<string, SessionStatus> = {
   done: "done", "완료": "done", canceled: "canceled", cancelled: "canceled", "취소": "canceled",
 };
 export const FIELD_LABEL: Record<Field, string> = {
-  date: "일정", location: "장소", room: "강의실", capacity: "정원", expected: "대상자", status: "상태", ft_name: "FT", note: "메모",
+  date: "일정", location: "장소", room: "강의실", capacity: "정원", expected: "대상 인원", status: "상태", ft_name: "FT", note: "메모",
 };
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -114,6 +114,8 @@ export async function parseScheduleFile(buffer: ArrayBuffer, filename: string) {
         const [loc, ...rest] = text.split(/\s+/);
         row.location = loc || null;
         row.room = rest.join(" ") || null;
+      } else if (f === "ft_name" && text === "미정") {
+        row.ft_name = ""; // 'FT 미정'이라고 적은 것은 빈 칸(모름)이 아니라 'FT 없음'으로 명시한 것 → 기존 값을 비운다
       } else {
         row[f] = text === "" ? null : text.slice(0, f === "note" ? 500 : 40);
       }
@@ -153,8 +155,10 @@ export function planSchedule(rows: ScheduleRow[], columns: Field[], existing: Ex
     for (const f of columns) {
       if (!(f in row)) continue;
       let next = row[f] ?? null;
+      const cleared = next === ""; // 명시적으로 비움 (예: FT '미정')
+      if (cleared) next = null;
       // 빈 칸 = 기존 값 유지 (새 차수는 그냥 비워 둔다). 예외: 미정(tbd)으로 돌리면서 날짜를 비운 경우
-      if (next == null && cur && !(f === "date" && row.status === "tbd")) continue;
+      if (next == null && cur && !cleared && !(f === "date" && row.status === "tbd")) continue;
       if (f === "status" && cur && (cur.status === "running" || cur.status === "done") && next !== cur.status) {
         statusKept = true;
         continue;
