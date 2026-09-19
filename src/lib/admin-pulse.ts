@@ -14,8 +14,6 @@ type Row = {
 export type PulseSession = {
   id: string; no: string; date: string | null; place: string; ft: string | null;
   people: number | null; n: number; delta: number; alert: boolean;
-  /** 평균은 기준 미달이지만 응답 수가 적어 표시를 보류한 차수 */
-  lowN: boolean;
 };
 export type OpenText = { session_no: string; text: string; created_at: string; session_id: string };
 
@@ -41,8 +39,7 @@ export async function loadPulse() {
     return {
       id, no: s.display_no, date: s.date, place: [s.location, s.room].filter(Boolean).join(" "), ft: s.ft_name,
       people: s.actual ?? s.expected ?? s.capacity, n: rs.length, delta: d,
-      alert: d < overall - ALERT_GAP && rs.length >= ALERT_MIN_N,
-      lowN: d < overall - ALERT_GAP && rs.length < ALERT_MIN_N,
+      alert: d < overall - ALERT_GAP && rs.length >= ALERT_MIN_N, // 응답이 적은 차수는 표시하지 않는다
     };
   }).sort((a, b) => (a.date ?? "9").localeCompare(b.date ?? "9") || Number(a.no) - Number(b.no));
 

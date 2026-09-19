@@ -27,8 +27,7 @@ function Trend({ sessions, overall }: { sessions: PulseSession[]; overall: numbe
       )}
       {sessions.map((s, i) => (
         <g key={s.id}>
-          <circle cx={x(i)} cy={y(s.delta)} r={s.alert ? 6 : 4} fill={s.alert ? "#C0392B" : s.lowN ? "#fff" : "#0F2B5E"}
-            stroke={s.lowN ? "#8A93A3" : "#fff"} strokeWidth="1.6" strokeDasharray={s.lowN ? "2 2" : undefined}>
+          <circle cx={x(i)} cy={y(s.delta)} r={s.alert ? 6 : 4} fill={s.alert ? "#C0392B" : "#0F2B5E"} stroke="#fff" strokeWidth="1.6">
             <title>{`${sessionLabel(s.no)} ${sign(s.delta)} (응답 ${s.n}명)`}</title>
           </circle>
           <text x={x(i)} y={H - 10} fontSize="10" fill="#8A93A3" textAnchor="middle">{s.no}</text>
@@ -75,11 +74,6 @@ export default async function PulsePage({ searchParams }: PageProps<"/admin/puls
                     {s.place && ` ${s.place}`}{s.people ? ` · ${s.people}명` : ""}{s.ft ? ` · FT ${s.ft}` : ""}. 운영 리뷰를 권합니다.</span>
                 </div>
               ))}
-              {p.sessions.some((x) => x.lowN) && (
-                <div className="ad-helper">
-                  점선 원 = 평균은 낮지만 응답이 {ALERT_MIN_N}건 미만이라 &apos;평균 대비 낮음&apos; 표시를 보류한 차수({p.sessions.filter((x) => x.lowN).map((x) => `${sessionLabel(x.no)} ${x.n}건`).join(", ")}).
-                </div>
-              )}
             </div>
             <div className="ad-card">
               <div className="hd"><div><h2>문항별 결과 (누적)</h2><div className="cap">응답 {p.n.toLocaleString()}명{p.responseRate !== null && ` · 응답률 ${p.responseRate}%`}</div></div></div>
