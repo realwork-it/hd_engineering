@@ -84,4 +84,16 @@ await db.exec("update sessions set status='canceled' where slug='s2'");
 d = (await one("select dashboard_data() d")).d;
 assert.equal(d.people, 100); assert.equal(d.sessions.length, 1);
 await assert.rejects(db.exec("update sessions set status='pilot' where slug='s1'"), /check/);
+
+// ---- M4: merge_team (미등록 팀 병합) ----
+await assert.rejects(one("select merge_team($1,$2)", [teamA, teamA]), /forbidden/);           // 운영자 아님
+await db.exec(`create or replace function auth.jwt() returns jsonb language sql stable as $fn$ select '{"email":"op@x.com"}'::jsonb $fn$; insert into admin_emails values ('op@x.com');`);
+const pend = (await one("select id from teams where name='신재생TF'")).id;                      // s1에 정체성 1건(pending)
+await one("select submit_pledge($1,'s1',null,'신재생TF','집요한','도전','병합 테스트','devM') r", [U()]);
+const mr = (await one("select merge_team($1,$2) r", [pend, teamA])).r;                          // A팀은 s1에 정체성이 이미 있음 → 충돌 1
+assert.deepEqual(mr, { moved: 1, conflicts: 1 });
+assert.equal((await one("select status from teams where id=$1", [pend])).status, 'merged');
+assert.equal((await one("select hidden from team_identities where team_id=$1", [pend])).hidden, true);
+assert.equal((await one("select count(*)::int c from pledges where team_id=$1", [pend])).c, 0);
+await assert.rejects(one("select merge_team($1,$2)", [pend, teamA]), /미등록 팀이 아닙니다/);
 console.log("ALL PASS", both.map(b=>b.status));
