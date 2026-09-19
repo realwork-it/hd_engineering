@@ -13,7 +13,18 @@ const db = adminClient();
 
 const { error: createErr } = await db.auth.admin.createUser({ email, password, email_confirm: true });
 if (createErr && createErr.code !== "email_exists") throw createErr;
-console.log(createErr ? `계정 이미 존재: ${email}` : `계정 생성: ${email}`);
+if (createErr) {
+  // 이미 있는 계정 → 비밀번호를 .env.local 값으로 갱신 (비밀번호 변경 시 재실행)
+  const { data, error: listErr } = await db.auth.admin.listUsers({ perPage: 1000 });
+  if (listErr) throw listErr;
+  const user = data.users.find((u) => u.email?.toLowerCase() === email);
+  if (!user) throw new Error(`계정을 찾을 수 없습니다: ${email}`);
+  const { error: updErr } = await db.auth.admin.updateUserById(user.id, { password });
+  if (updErr) throw updErr;
+  console.log(`계정 이미 존재 — 비밀번호 갱신: ${email}`);
+} else {
+  console.log(`계정 생성: ${email}`);
+}
 
 const { error } = await db.from("admin_emails").upsert({ email }, { onConflict: "email" });
 if (error) throw error;
