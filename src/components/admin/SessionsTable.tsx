@@ -63,15 +63,15 @@ export function SessionsTable({
                 return (
                   <tr key={s.id} className={s.status === "canceled" ? "dim" : ""}>
                     <td><b>{s.display_no}</b></td>
-                    <td>{dateLabel(s.date) ?? "미정"}</td>
-                    <td>{[s.location, s.room].filter(Boolean).join(" ") || "—"}</td>
+                    <td className="nw">{dateLabel(s.date) ?? "미정"}</td>
+                    <td className="nw">{[s.location, s.room].filter(Boolean).join(" ") || "—"}</td>
                     <td>{s.capacity ?? "—"}</td>
                     <td>{s.expected ?? "—"}</td>
                     <td>
                       {s.actual ?? "—"}
                       {s.actual != null && base ? <div className="sub">{Math.round((s.actual / base) * 100)}%</div> : null}
                     </td>
-                    <td>{s.ft_name ?? "미정"}</td>
+                    <td className="nw">{s.ft_name ?? "미정"}</td>
                     <td><StatusBadge status={s.status} /></td>
                     <td>
                       {hasData ? (

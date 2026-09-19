@@ -21,7 +21,8 @@ export default async function ConsoleLayout({ children }: LayoutProps<"/admin">)
         </div>
         <SideNav />
         <form action={signOut} className="ad-me">
-          <div className="av">RW</div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="ci" src="/realwork-ci.png" alt="REALWORK" width={1780} height={460} />
           <div>
             <div className="nm">리얼워크 운영자</div>
             <div className="rl">{user.email}</div>
