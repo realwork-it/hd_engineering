@@ -1,0 +1,69 @@
+// 마이그레이션 전체를 임베디드 Postgres(PGlite)에 적용하고 제출 규칙(R3~R8, 멱등)을 검증
+import { PGlite } from "@electric-sql/pglite";
+import { readFileSync, readdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import assert from "node:assert/strict";
+const dir = fileURLToPath(new URL("../supabase/migrations/", import.meta.url));
+const db = new PGlite();
+await db.exec(`create role anon; create role authenticated; create role service_role; create schema auth;
+create function auth.jwt() returns jsonb language sql stable as $$ select '{}'::jsonb $$;
+alter default privileges in schema public grant all on tables to anon, authenticated;
+alter default privileges in schema public grant execute on functions to anon, authenticated, service_role;`);
+for (const f of readdirSync(dir).sort()) await db.exec(readFileSync(dir + f, "utf8").replace("create extension if not exists pgcrypto;",""));
+await db.exec(`insert into sessions(slug,display_no,status) values ('s1','1','confirmed'),('s2','2','confirmed');
+insert into teams(name,org_name) values ('A팀','본부');
+insert into app_settings values ('pool_adj','["집요한"]'),('pool_noun','["도전"]'),('study_default_url','"https://example.com/study"');`);
+const one = async (sql, p) => (await db.query(sql, p)).rows[0];
+const teamA = (await one("select id from teams where name='A팀'")).id;
+const U = () => crypto.randomUUID();
+const ident = (id, slug, team, raw, w, ow=false, dk='d1') => one("select submit_identity($1,$2,$3,$4,$5,'dna','goal',$6,$7) r", [id, slug, team, raw, w, dk, ow]).then(r=>r.r);
+
+let id1 = U();
+assert.equal((await ident(id1,'s1',teamA,null,'w1')).status, 'locked');
+await db.exec(`update sessions set locks = '{"study":true,"identity":true,"finder":true,"pledge":true,"pulse":true}'`);
+assert.equal((await ident(id1,'nope',teamA,null,'w1')).status, 'not_found');
+assert.equal((await ident(id1,'s1',teamA,null,'w1')).status, 'created');
+assert.equal((await ident(id1,'s1',teamA,null,'w1')).status, 'updated');            // retry, same payload
+assert.equal((await one("select count(*)::int c from team_identity_revisions")).c, 0); // no revision for identical
+assert.equal((await ident(U(),'s1',teamA,null,'w2',false,'d2')).status, 'exists');   // other device same team
+assert.equal((await ident(U(),'s1',teamA,null,'w2',true,'d2')).status, 'updated');   // confirmed overwrite
+assert.equal((await one("select count(*)::int c from team_identity_revisions")).c, 1);
+assert.equal((await one("select count(*)::int c from team_identities")).c, 1);
+assert.equal((await ident(U(),'s2',teamA,null,'w3')).status, 'created');             // other session = separate
+assert.equal((await ident(U(),'s1',null,' a팀 ','x',true)).status, 'updated');        // case-insensitive roster match
+assert.equal((await ident(U(),'s1',null,'신재생TF','x')).status, 'created');          // unknown → pending
+assert.deepEqual(await one("select status, org_name from teams where name='신재생TF'"), {status:'pending', org_name:'(미등록)'});
+assert.equal((await ident(U(),'s1',null,'   ','x')).status, 'invalid');
+
+const fin = (id, ow=false) => one("select submit_finder($1,'s1',$2,null,'집요한','도전','데이터에 밝은','판단','why','why','d1',$3) r",[id,teamA,ow]).then(r=>r.r);
+assert.equal((await fin(U())).status,'created');
+assert.equal((await fin(U())).status,'exists');
+assert.equal((await fin(U(),true)).status,'updated');
+assert.deepEqual(await one("select h_adj_custom a,h_noun_custom b,f_adj_custom c,f_noun_custom d from finder_submissions"),{a:false,b:false,c:true,d:true});
+
+const pl = (id, dk, act='act') => one("select submit_pledge($1,'s1',$2,null,'집요한','도전',$3,$4) r",[id,teamA,act,dk]).then(r=>r.r);
+const p1 = U();
+const both = await Promise.all([pl(p1,'dev1'), pl(p1,'dev1')]);                         // double tap
+assert.equal((await pl(U(),'dev1','edited')).status,'updated');                       // same device = edit
+assert.equal((await pl(U(),'dev2')).status,'created');
+assert.equal((await one("select count(*)::int c from pledges")).c, 2);
+assert.equal((await one("select action from pledges where device_key='dev1'")).action,'edited');
+
+const pu = U();
+for (let i=0;i<3;i++) assert.equal((await one("select submit_pulse($1,'s1','{1,7,2,6,3,5,4,4}','열 글자 이상의 주관식 응답') r",[pu])).r.status,'created');
+assert.equal((await one("select count(*)::int c from pulses")).c, 1);
+await assert.rejects(one("select submit_pulse($1,'s1','{0,7,2,6,3,5,4,4}','열 글자 이상의 주관식 응답') r",[U()]));
+const cols = (await db.query("select column_name from information_schema.columns where table_name='pulses'")).rows.map(r=>r.column_name);
+assert.ok(!cols.some(c=>/team|device|name/.test(c)), 'pulses has no identifier columns');
+
+assert.equal((await one("select log_study_view('s1','d1') u")).u, 'https://example.com/study');
+await db.exec("update sessions set study_url='https://alt' where slug='s1'");
+assert.equal((await one("select log_study_view('s1','d1') u")).u, 'https://alt');
+assert.equal((await one("select count(*)::int c from material_views")).c, 2);
+
+await db.exec("set role anon");
+await assert.rejects(one("select submit_pulse($1,'s1','{1,7,2,6,3,5,4,4}','열 글자 이상의 주관식 응답')",[U()]), /permission denied/);
+await assert.rejects(one("select _resolve_team(null,'x')"), /permission denied/);
+await db.exec("reset role; set role service_role");
+assert.ok(await one("select * from get_session_hub('s1')"));
+console.log("ALL PASS", both.map(b=>b.status));
