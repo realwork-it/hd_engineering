@@ -36,7 +36,7 @@ export default async function TodayPage({ searchParams }: PageProps<"/admin">) {
           <h1>{isToday ? "오늘의 운영" : "운영일 미리보기"} — {dateLabel(date)}</h1>
           <div className="s">
             {sessions.length
-              ? `${places || "장소 미정"} · ${sessions.length}개 차수${sessions.length > 1 ? " 병행" : ""} ${expected ? ` · 대상 인원 ${expected}명` : ""}${sessions.length > 1 ? " · QR은 방 이름과 색으로 구분됩니다" : ""}`
+              ? `${places || "장소 미정"} · ${sessions.length}개 차수${sessions.length > 1 ? " 병행" : ""} ${expected ? ` · 대상인원 ${expected}명` : ""}${sessions.length > 1 ? " · QR은 방 이름과 색으로 구분됩니다" : ""}`
               : "이 날짜에 예정된 차수가 없습니다"}
           </div>
         </div>
@@ -50,7 +50,7 @@ export default async function TodayPage({ searchParams }: PageProps<"/admin">) {
 
       {missingActual.length > 0 && (
         <div className="ad-alert">
-          ⚠️ <span>종료된 차수 중 <b>실참석 인원 미입력</b>: {missingActual.map((s) => sessionLabel(s.display_no)).join(", ")} — 현황판 누적 인원이 대상 인원으로 잠정 집계됩니다.</span>
+          ⚠️ <span>종료된 차수 중 <b>실참석 인원 미입력</b>: {missingActual.map((s) => sessionLabel(s.display_no)).join(", ")} — 현황판 누적 인원이 대상인원으로 잠정 집계됩니다.</span>
         </div>
       )}
 

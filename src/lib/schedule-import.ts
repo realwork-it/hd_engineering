@@ -31,7 +31,7 @@ const STATUS: Record<string, SessionStatus> = {
   done: "done", "완료": "done", canceled: "canceled", cancelled: "canceled", "취소": "canceled",
 };
 export const FIELD_LABEL: Record<Field, string> = {
-  date: "일정", location: "장소", room: "강의실", capacity: "정원", expected: "대상 인원", status: "상태", ft_name: "FT", note: "메모",
+  date: "일정", location: "장소", room: "강의실", capacity: "정원", expected: "대상인원", status: "상태", ft_name: "FT", note: "메모",
 };
 
 const pad = (n: number) => String(n).padStart(2, "0");

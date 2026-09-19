@@ -59,7 +59,7 @@ export async function setStatus(id: string, status: SessionStatus): Promise<Resu
 
 export type SessionInput = {
   display_no: string; date: string; location: string; room: string;
-  expected: string; actual: string; // expected = 대상 인원
+  expected: string; actual: string; // expected = 대상인원
   ft_name: string; status: string; note: string;
 };
 
