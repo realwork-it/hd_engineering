@@ -3,11 +3,11 @@ import ExcelJS from "exceljs";
 import { identitySentence } from "@/lib/josa";
 import { adminDb } from "@/lib/admin";
 
-export type Tab = "identity" | "finder" | "pledge";
+export type Tab = "identity" | "finder" | "promise";
 export const TABS: Record<Tab, { table: string; label: string }> = {
   identity: { table: "team_identities", label: "팀 정체성" },
   finder: { table: "finder_submissions", label: "인재상" },
-  pledge: { table: "pledges", label: "개인다짐" },
+  promise: { table: "team_promises", label: "팀 실천약속" },
 };
 
 export type Submission = {
@@ -37,7 +37,7 @@ export async function fetchAll<T>(db: Db, table: string, select: string, order =
 const FIELDS: Record<Tab, string> = {
   identity: "work, dna, goal",
   finder: "h_adj, h_adj_custom, h_noun, h_noun_custom, f_adj, f_adj_custom, f_noun, f_noun_custom, why_heritage, why_future",
-  pledge: "adj, adj_custom, noun, noun_custom, action",
+  promise: "leader, member, routine",
 };
 
 type Raw = Record<string, unknown> & {
@@ -55,7 +55,7 @@ export async function loadSubmissions(db: Db, tab: Tab, filters: Filters): Promi
 
   // 복수 제출: 숨기지 않은 제출 기준으로 같은 팀이 2개 이상 차수에 있는 경우
   const byTeam = new Map<string, Set<string>>();
-  if (tab === "identity")
+  if (tab === "identity" || tab === "promise")
     for (const r of raw)
       if (r.team_id && !r.hidden) (byTeam.get(r.team_id) ?? byTeam.set(r.team_id, new Set()).get(r.team_id)!).add(r.sessions?.display_no ?? "?");
 
@@ -84,7 +84,7 @@ export function parseFilters(params: Record<string, string | string[] | undefine
   const one = (k: string) => (typeof params[k] === "string" ? (params[k] as string) : undefined);
   const tab = one("tab");
   return {
-    tab: tab === "finder" || tab === "pledge" ? tab : "identity",
+    tab: tab === "finder" || tab === "promise" ? tab : "identity",
     session: one("session") || undefined, org: one("org") || undefined, q: one("q") || undefined,
     hidden: one("hidden") === "1", page: Math.max(1, Number(one("page")) || 1),
   };
@@ -116,10 +116,9 @@ export async function submissionsWorkbook(tab: Tab, rows: Submission[]): Promise
       { header: "Future 명사", key: "f_noun", width: 16 }, { header: "F명 Pool외", key: "f_noun_custom", width: 10 },
       { header: "Heritage 선정 이유", key: "why_heritage", width: 60 }, { header: "Future 선정 이유", key: "why_future", width: 60 },
     ],
-    pledge: [
-      { header: "형용사", key: "adj", width: 18 }, { header: "형 Pool외", key: "adj_custom", width: 10 },
-      { header: "명사", key: "noun", width: 16 }, { header: "명 Pool외", key: "noun_custom", width: 10 },
-      { header: "실천 내용", key: "action", width: 60 },
+    promise: [
+      { header: "리더행동", key: "leader", width: 50 }, { header: "팀원행동", key: "member", width: 50 },
+      { header: "팀루틴/구조", key: "routine", width: 50 }, { header: "복수 제출(다른 차수)", key: "multi", width: 18 },
     ],
   }[tab];
   ws.columns = [...common, ...specific, ...tail];

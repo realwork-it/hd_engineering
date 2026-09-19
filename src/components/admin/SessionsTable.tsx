@@ -8,7 +8,7 @@ import { STATUS_LABEL, StatusBadge, copyText, useToast } from "./ui";
 import { ScheduleUpload } from "./ScheduleUpload";
 
 export type Stats = {
-  session_id: string; study_views: number; identities: number; finders: number; pledges: number; pulses: number;
+  session_id: string; identities: number; finders: number; promises: number; pulses: number;
 };
 
 const EMPTY: SessionInput = {
@@ -62,7 +62,7 @@ export function SessionsTable({
               {visible.map((s) => {
                 const st = stats[s.id];
                 const base = s.expected;
-                const hasData = st && st.identities + st.finders + st.pledges + st.pulses > 0;
+                const hasData = st && st.identities + st.finders + st.promises + st.pulses > 0;
                 return (
                   <tr key={s.id} className={s.status === "canceled" ? "dim" : ""}>
                     <td><b>{s.display_no}</b></td>
@@ -79,7 +79,7 @@ export function SessionsTable({
                       {hasData ? (
                         <>
                           Pulse {st.pulses} · 정체성 {st.identities}
-                          <div className="sub">인재상 {st.finders} · 다짐 {st.pledges}</div>
+                          <div className="sub">인재상 {st.finders} · 실천약속 {st.promises}</div>
                         </>
                       ) : "—"}
                     </td>

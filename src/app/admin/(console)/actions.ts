@@ -9,7 +9,7 @@ import type { Activity } from "@/lib/participant/types";
 type Result = { ok: true } | { ok: false; message: string };
 const fail = (message: string): Result => ({ ok: false, message });
 
-const ACTIVITIES: Activity[] = ["study", "identity", "finder", "pledge", "pulse"];
+const ACTIVITIES: Activity[] = ["study", "identity", "finder", "promise", "pulse"];
 const STATUSES: SessionStatus[] = ["tbd", "confirmed", "running", "done", "canceled"];
 // 혼동 문자(0O1lI) 제외 — scripts/seed.mjs와 동일
 const newSlug = customAlphabet("23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ", 6);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { identitySentence, jEul } from "@/lib/josa";
+import { identitySentence } from "@/lib/josa";
 import type { Submission, Tab } from "@/lib/admin-data";
 import { sessionLabel } from "@/lib/participant/types";
 import { editSubmission, reassignSession, setHidden } from "@/app/admin/(console)/data/actions";
@@ -11,7 +11,7 @@ const EDIT_FIELDS: Record<Tab, [key: string, label: string, long?: boolean][]> =
   identity: [["work", "고유업"], ["dna", "고유성"], ["goal", "지향점"]],
   finder: [["h_adj", "Heritage 형용사"], ["h_noun", "Heritage 명사"], ["f_adj", "Future 형용사"], ["f_noun", "Future 명사"],
     ["why_heritage", "Heritage 선정 이유", true], ["why_future", "Future 선정 이유", true]],
-  pledge: [["adj", "형용사"], ["noun", "명사"], ["action", "실천 내용", true]],
+  promise: [["leader", "리더행동 (리더는 ~합니다)", true], ["member", "팀원행동 (팀원은 ~합니다)", true], ["routine", "팀루틴/구조 (우리는 ~합니다)", true]],
 };
 
 const when = (iso: string) =>
@@ -43,7 +43,7 @@ export function DataTable({ tab, rows, sessions }: { tab: Tab; rows: Submission[
             <th>차수</th><th>{tab === "identity" ? "팀" : "소속 팀"}</th>
             {tab === "identity" && <th>완성 문장</th>}
             {tab === "finder" && <><th>Heritage 키워드</th><th>Future 키워드</th><th>선정 이유</th></>}
-            {tab === "pledge" && <th>다짐</th>}
+            {tab === "promise" && <><th>리더행동</th><th>팀원행동</th><th>팀루틴/구조</th></>}
             <th>제출</th><th />
           </tr>
         </thead>
@@ -68,11 +68,12 @@ export function DataTable({ tab, rows, sessions }: { tab: Tab; rows: Submission[
                   </td>
                 </>
               )}
-              {tab === "pledge" && (
-                <td>
-                  <Chip adj={r.f.adj} noun={r.f.noun} custom={!!(r.f.adj_custom || r.f.noun_custom)} />
-                  {jEul(String(r.f.noun))} 위해, 나는 {String(r.f.action)}{jEul(String(r.f.action))} 하겠습니다
-                </td>
+              {tab === "promise" && (
+                <>
+                  <td style={{ minWidth: 160 }}>{String(r.f.leader)}</td>
+                  <td style={{ minWidth: 160 }}>{String(r.f.member)}</td>
+                  <td style={{ minWidth: 160 }}>{String(r.f.routine)}</td>
+                </>
               )}
               <td style={{ whiteSpace: "nowrap" }}>{when(r.created_at)}</td>
               <td>
@@ -119,7 +120,7 @@ function EditModal({
     <div className="ad-modal-bg" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="ad-modal" role="dialog" aria-modal="true" aria-label="제출 수정">
         <h2>제출 수정 — {sessionLabel(row.session_no)} · {row.team_name}</h2>
-        <div className="cap">오탈자 교정 등 최소한으로만 수정해 주세요.{tab === "identity" && " 수정 전 내용은 이력으로 보존됩니다."}</div>
+        <div className="cap">오탈자 교정 등 최소한으로만 수정해 주세요.{tab !== "finder" && " 수정 전 내용은 이력으로 보존됩니다."}</div>
         <div className="ad-form">
           {EDIT_FIELDS[tab].map(([k, label, long]) => (
             <div key={k} className={long || tab === "identity" ? "full" : ""}>

@@ -77,7 +77,7 @@ export default async function DataPage({ searchParams }: PageProps<"/admin/data"
         <div className="ad-helper">
           {f.tab === "identity" && "복수 제출 팀은 두 문장을 모두 보존합니다 — 게시용 카드 제작 시 어느 본을 쓸지 고객사와 협의 후 대표본을 지정하세요."}
           {f.tab === "finder" && "점선 칩 = Pool 밖 직접 입력. 자주 등장하는 Pool 밖 단어는 인재상 Pool 보완 후보입니다."}
-          {f.tab === "pledge" && "개인다짐은 익명(팀만 기록)입니다. 현황판에는 키워드 집계만 노출됩니다."}
+          {f.tab === "promise" && "팀 실천약속은 팀당 1건입니다(재제출 = 수정, 이전 본은 이력으로 보존). 현황판에는 카테고리별 핵심 단어만 노출됩니다."}
         </div>
       </div>
     </>

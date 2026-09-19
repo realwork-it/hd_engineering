@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { DashboardData, DashSession, Pair } from "@/lib/dashboard";
-import { PledgeFlow } from "./PledgeFlow";
+import { PromiseWords } from "./PromiseWords";
 import { TalentShift } from "./TalentShift";
 
 // R16 분모
@@ -52,7 +52,6 @@ export function DashboardView({ initial }: { initial: DashboardData }) {
   const done = regular.filter((s) => s.status === "done").length;
   const running = data.sessions.filter((s) => s.status === "running");
   const pct = (n: number, total: number) => Math.min(100, Math.round((n / total) * 100));
-  const custom = data.pledges ? Math.round((data.pledges_custom / data.pledges) * 100) : 0;
   const responseRate = data.pulse.people ? Math.min(100, Math.round((data.pulse.n / data.pulse.people) * 100)) : null;
 
   if (denied)
@@ -93,7 +92,7 @@ export function DashboardView({ initial }: { initial: DashboardData }) {
                   누적 참여 인원 <b>{pct(data.people, TOTAL_PEOPLE)}%</b> (전체 {TOTAL_PEOPLE.toLocaleString()}명)
                 </Counter>
                 <Counter value={data.teams_with_identity} suffix="팀">팀 정체성 (전체 {TOTAL_TEAMS}팀)</Counter>
-                <Counter value={data.pledges} suffix="건" gold>개인다짐</Counter>
+                <Counter value={data.teams_with_promise} suffix="팀" gold>팀 실천약속 (전체 {TOTAL_TEAMS}팀)</Counter>
               </div>
             </div>
             <Road sessions={data.sessions} />
@@ -127,12 +126,12 @@ export function DashboardView({ initial }: { initial: DashboardData }) {
           <section className="db-card db-rank-card">
             <div className="db-hd">
               <div>
-                <h2>{data.pledges.toLocaleString()}개의 다짐이 향하는 곳</h2>
-                <div className="db-cap">&apos;어떤 태도로&apos; → &apos;무엇을&apos; — 자주 고른 단어와, 함께 선택된 연결(굵을수록 많이)</div>
+                <h2>현장으로 가져가는 약속</h2>
+                <div className="db-cap">{data.teams_with_promise}개 팀의 실천약속 — 리더 · 팀원 · 팀루틴에서 자주 나온 말</div>
               </div>
             </div>
-            {data.pledges ? <PledgeFlow flow={data.pledge_flow} combos={data.ranks} total={data.pledges} /> : <div className="db-empty">첫 다짐을 기다리고 있습니다</div>}
-            <div className="db-rank-foot">Pool 밖 직접 입력 단어 {custom}% — 인재상 Pool 보완의 단서로 수집 중</div>
+            {data.promises ? <PromiseWords words={data.promise_words} teams={data.teams_with_promise} /> : <div className="db-empty">첫 실천약속을 기다리고 있습니다</div>}
+            <div className="db-rank-foot">숫자 = 그 단어를 약속에 쓴 팀 수 · 약속 원문은 운영 페이지에서</div>
           </section>
 
           <section className="db-card db-pulse-card">

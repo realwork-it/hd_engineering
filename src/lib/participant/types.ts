@@ -1,4 +1,4 @@
-export type Activity = "study" | "identity" | "finder" | "pledge" | "pulse";
+export type Activity = "study" | "identity" | "finder" | "promise" | "pulse";
 export type Locks = Record<Activity, boolean>;
 
 export type Hub = {
@@ -24,7 +24,7 @@ export const HUB_CARDS: { no: number; activity: Activity; title: string; desc: s
   { no: 2, activity: "study", title: "시험공부 자료", desc: "가치체계 능력시험 전, 가볍게 읽어보세요" },
   { no: 3, activity: "identity", title: "팀 정체성 제출", desc: "팀에서 확정한 문장을 올려주세요" },
   { no: 4, activity: "finder", title: "조별 인재상 제출", desc: "조에서 작성한 키워드를 올려주세요" },
-  { no: 5, activity: "pledge", title: "개인다짐 제출", desc: "나의 다짐 한 줄을 남겨주세요" },
+  { no: 5, activity: "promise", title: "팀 실천약속 제출", desc: "팀에서 정한 세 가지 약속을 올려주세요" },
   { no: 6, activity: "pulse", title: "Pulse Check", desc: "워크숍을 마치며, 다섯 문항" },
 ];
 

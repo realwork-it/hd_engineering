@@ -73,16 +73,18 @@ export async function submitFinder(
   });
 }
 
-export async function submitPledge(
+// 팀 실천약속: 3개 카테고리 모두 필수, 자유 문장(각 100자). 재제출 규칙은 팀 정체성과 같다.
+export async function submitPromise(
   slug: string,
-  p: { id: string; team: TeamPick; adj: string; noun: string; action: string },
+  p: { id: string; team: TeamPick; leader: string; member: string; routine: string; overwrite?: boolean },
 ): Promise<SubmitResult> {
   const t = team(p?.team);
-  const adj = text(p?.adj, 30), noun = text(p?.noun, 30), action = text(p?.action, 80);
-  if (!UUID.test(p?.id) || !t || !adj || !noun || !action) return INVALID;
-  return call("submit_pledge", {
+  const leader = text(p?.leader, 100), member = text(p?.member, 100), routine = text(p?.routine, 100);
+  if (!UUID.test(p?.id) || !t || !leader || !member || !routine) return INVALID;
+  return call("submit_promise", {
     p_id: p.id, p_slug: slug, p_team_id: t.id, p_team_raw: t.raw,
-    p_adj: adj, p_noun: noun, p_action: action, p_device_key: await getDeviceKey(),
+    p_leader: leader, p_member: member, p_routine: routine,
+    p_device_key: await getDeviceKey(), p_overwrite: p.overwrite === true,
   });
 }
 

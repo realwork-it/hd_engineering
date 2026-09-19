@@ -12,10 +12,11 @@ export type DashSession = {
 export type DashboardData = {
   sessions: DashSession[];
   people: number; teams_with_identity: number; identities: number;
-  pledges: number; pledges_custom: number; finders: number;
+  finders: number; promises: number; teams_with_promise: number;
   cloud: Pair[]; work_top: Pair[]; dna_top: Pair[];
-  ranks: Pair[]; heritage: Pair[]; future: Pair[];
-  pledge_flow: { adj: Pair[]; noun: Pair[]; links: [adj: string, noun: string, count: number][] };
+  heritage: Pair[]; future: Pair[];
+  /** 팀 실천약속: 카테고리별 핵심 단어 [단어, 그 단어를 쓴 팀 수] */
+  promise_words: { leader: Pair[]; member: Pair[]; routine: Pair[] };
   hf_words: [word: string, heritage: number, future: number][];
   /** people = 응답률 분모 (완료 차수 + Pulse 응답이 들어온 진행 중 차수의 인원) */
   pulse: { n: number; people: number; q: [pre: number, post: number][] };

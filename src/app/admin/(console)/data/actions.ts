@@ -36,7 +36,7 @@ export async function reassignSession(tab: string, id: string, sessionId: string
 const LIMITS: Record<Tab, Record<string, number>> = {
   identity: { work: 100, dna: 100, goal: 100 },
   finder: { h_adj: 30, h_noun: 30, f_adj: 30, f_noun: 30, why_heritage: 300, why_future: 300 },
-  pledge: { adj: 30, noun: 30, action: 80 },
+  promise: { leader: 100, member: 100, routine: 100 },
 };
 const OPTIONAL = new Set(["why_heritage", "why_future"]);
 const POOL_OF: Record<string, "pool_adj" | "pool_noun"> = {
@@ -62,6 +62,13 @@ export async function editSubmission(tab: string, id: string, input: Record<stri
       patch[`${key}_custom`] = !pool.includes(patch[key] as string);
     }
 
+  if (tab === "promise") {
+    const { data: cur } = await db.from("team_promises").select("leader, member, routine").eq("id", id).single();
+    if (cur && (cur.leader !== patch.leader || cur.member !== patch.member || cur.routine !== patch.routine)) {
+      const { error: revErr } = await db.from("team_promise_revisions").insert({ promise_id: id, ...cur });
+      if (revErr) return fail(revErr.message);
+    }
+  }
   if (tab === "identity") {
     // 운영자 수정도 이력에 남긴다 (R5)
     const { data: cur } = await db.from("team_identities").select("work, dna, goal").eq("id", id).single();

@@ -6,9 +6,9 @@ import { useToast } from "./ui";
 
 export type TeamRow = {
   id: string; name: string; org: string; sil: string; headcount: number | null;
-  identities: number; identitySessions: string[]; pledges: number;
+  identities: number; identitySessions: string[]; promises: number;
 };
-export type PendingTeam = { id: string; name: string; identities: number; finders: number; pledges: number; sessions: string[] };
+export type PendingTeam = { id: string; name: string; identities: number; finders: number; promises: number; sessions: string[] };
 
 type Modal = { kind: "add" } | { kind: "approve"; team: PendingTeam } | { kind: "merge"; team: PendingTeam };
 
@@ -37,7 +37,7 @@ export function TeamsView({ roster, pending, summary }: { roster: TeamRow[]; pen
                 <div className="nm">{t.name}</div>
                 <div className="ct">
                   {t.sessions.length ? `${t.sessions.join("·")}차수 · ` : ""}
-                  {[t.identities && `팀 정체성 ${t.identities}건`, t.finders && `인재상 ${t.finders}건`, t.pledges && `개인다짐 ${t.pledges}건`].filter(Boolean).join(" · ") || "연결된 제출 없음"}
+                  {[t.identities && `팀 정체성 ${t.identities}건`, t.finders && `인재상 ${t.finders}건`, t.promises && `팀 실천약속 ${t.promises}건`].filter(Boolean).join(" · ") || "연결된 제출 없음"}
                   에서 직접 입력됨
                 </div>
               </div>
@@ -61,7 +61,7 @@ export function TeamsView({ roster, pending, summary }: { roster: TeamRow[]; pen
       <div className="ad-card" style={{ paddingTop: 14 }}>
         <div className="ad-tablewrap">
           <table>
-            <thead><tr><th>팀</th><th>조직</th><th>실</th><th>인원</th><th>정체성</th><th>다짐</th></tr></thead>
+            <thead><tr><th>팀</th><th>조직</th><th>실</th><th>인원</th><th>정체성</th><th>실천약속</th></tr></thead>
             <tbody>
               {shown.map((t) => (
                 <tr key={t.id}>
@@ -71,7 +71,7 @@ export function TeamsView({ roster, pending, summary }: { roster: TeamRow[]; pen
                     {t.identities ? `${t.identities}건` : "—"}
                     {t.identitySessions.length > 1 && <span className="ad-badge flag" style={{ marginLeft: 6 }}>⚑ {t.identitySessions.join("·")}차수</span>}
                   </td>
-                  <td>{t.pledges || "—"}</td>
+                  <td>{t.promises ? `${t.promises}건` : "—"}</td>
                 </tr>
               ))}
             </tbody>

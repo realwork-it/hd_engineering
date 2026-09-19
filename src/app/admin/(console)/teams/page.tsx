@@ -8,11 +8,11 @@ type Ref = { team_id: string | null; hidden: boolean; sessions: { display_no: st
 
 export default async function TeamsPage() {
   const db = await adminDb();
-  const [{ data: teams }, identities, finders, pledges] = await Promise.all([
+  const [{ data: teams }, identities, finders, promises] = await Promise.all([
     db.from("teams").select("id, name, org_name, sil_name, headcount, status").neq("status", "merged").order("headcount", { ascending: false, nullsFirst: false }),
     fetchAll<Ref>(db, "team_identities", "team_id, hidden, sessions(display_no)"),
     fetchAll<Ref>(db, "finder_submissions", "team_id, hidden, sessions(display_no)"),
-    fetchAll<Ref>(db, "pledges", "team_id, hidden, sessions(display_no)"),
+    fetchAll<Ref>(db, "team_promises", "team_id, hidden, sessions(display_no)"),
   ]);
 
   const tally = (rows: Ref[]) => {
@@ -25,16 +25,16 @@ export default async function TeamsPage() {
     }
     return m;
   };
-  const [ti, tf, tp] = [tally(identities), tally(finders), tally(pledges)];
+  const [ti, tf, tp] = [tally(identities), tally(finders), tally(promises)];
 
   const all = teams ?? [];
   const roster: TeamRow[] = all.filter((t) => t.status === "active").map((t) => ({
     id: t.id, name: t.name, org: t.org_name, sil: t.sil_name ?? "", headcount: t.headcount,
-    identities: ti.get(t.id)?.n ?? 0, identitySessions: [...(ti.get(t.id)?.sessions ?? [])], pledges: tp.get(t.id)?.n ?? 0,
+    identities: ti.get(t.id)?.n ?? 0, identitySessions: [...(ti.get(t.id)?.sessions ?? [])], promises: tp.get(t.id)?.n ?? 0,
   }));
   const pending: PendingTeam[] = all.filter((t) => t.status === "pending").map((t) => ({
     id: t.id, name: t.name,
-    identities: ti.get(t.id)?.n ?? 0, finders: tf.get(t.id)?.n ?? 0, pledges: tp.get(t.id)?.n ?? 0,
+    identities: ti.get(t.id)?.n ?? 0, finders: tf.get(t.id)?.n ?? 0, promises: tp.get(t.id)?.n ?? 0,
     sessions: [...new Set([ti, tf, tp].flatMap((m) => [...(m.get(t.id)?.sessions ?? [])]))],
   }));
 
