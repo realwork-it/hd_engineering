@@ -15,10 +15,12 @@ export default async function TodayPage({ searchParams }: PageProps<"/admin">) {
   const isToday = date === today;
 
   const db = await adminDb();
-  const [{ data: rows }, { data: next }, { data: token }, origin] = await Promise.all([
+  const [{ data: rows }, { data: next }, { data: token }, { data: stale }, origin] = await Promise.all([
     db.from("sessions").select(SESSION_COLUMNS).eq("date", date).neq("status", "canceled").order("room").order("display_no"),
     db.from("sessions").select("date").gt("date", date).neq("status", "canceled").order("date").limit(1),
     db.from("app_settings").select("value").eq("key", "dashboard_token").single(),
+    // 종료를 빠뜨린 지난 차수: 현황판에 계속 '진행 중'으로 남고 제출도 열려 있다
+    db.from("sessions").select("id, display_no, date").eq("status", "running").lt("date", today).order("date"),
     siteOrigin(),
   ]);
   const sessions = (rows ?? []) as SessionRow[];
@@ -48,6 +50,19 @@ export default async function TodayPage({ searchParams }: PageProps<"/admin">) {
         </div>
       </div>
 
+      {(stale ?? []).length > 0 && (
+        <div className="ad-alert">
+          ⚠️ <span>
+            <b>종료하지 않은 지난 차수</b>:{" "}
+            {(stale ?? []).map((s) => (
+              <Link key={s.id} href={`/admin?date=${s.date}`} style={{ color: "inherit", fontWeight: 700, marginRight: 8 }}>
+                {sessionLabel(s.display_no)}({dateLabel(s.date)})
+              </Link>
+            ))}
+            — 현황판에 계속 &apos;진행 중&apos;으로 보이고 제출도 열려 있습니다. 날짜를 눌러 이동한 뒤 실참석을 입력하고 <b>차수 종료</b>를 눌러 주세요.
+          </span>
+        </div>
+      )}
       {missingActual.length > 0 && (
         <div className="ad-alert">
           ⚠️ <span>종료된 차수 중 <b>실참석 인원 미입력</b>: {missingActual.map((s) => sessionLabel(s.display_no)).join(", ")} — 현황판 누적 인원이 대상인원으로 잠정 집계됩니다.</span>

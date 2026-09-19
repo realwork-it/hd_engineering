@@ -150,3 +150,5 @@
 .pt-msg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 28px}
 .pt-msg h1{font-size:18px;font-weight:800;margin-bottom:8px}
 .pt-msg p{font-size:13.5px;color:var(--sub);line-height:1.65}
+
+.pt-msg-btn{margin-top:22px;max-width:220px}

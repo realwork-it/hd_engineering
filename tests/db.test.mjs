@@ -138,4 +138,16 @@ assert.equal((await one("select dashboard_data() d")).d.pulse.people, 170);
 // ---- 단어 정리 규칙 (_word_stem) ----
 for (const [raw, want] of [['회의를','회의'],['공유합니다.','공유'],['시작하고','시작'],['끝냅니다',''],['읽습니다',''],['바로',''],['역할을','역할'],['권한','권한'],['피드백은','피드백'],['리스크','리스크'],['논의','논의'],['금요일마다','금요일'],['"안전"','안전']])
   assert.equal((await one("select _word_stem($1) w", [raw])).w, want, `_word_stem(${raw})`);
+
+// ---- 운영 실수 방지: 활동을 열면 시작 전 차수는 자동으로 '진행 중' ----
+await db.exec("insert into sessions(slug,display_no,status) values ('s10','10','tbd'),('s11','11','done')");
+const sid10 = (await one("select id from sessions where slug='s10'")).id, sid11 = (await one("select id from sessions where slug='s11'")).id;
+await one("select set_session_lock($1,'study',true)", [sid10]);
+assert.equal((await one("select status from sessions where slug='s10'")).status, 'tbd', "시험공부 자료만 여는 것으로는 시작되지 않음");
+await one("select set_session_lock($1,'identity',true)", [sid10]);
+assert.equal((await one("select status from sessions where slug='s10'")).status, 'running');
+await one("select set_session_lock($1,'identity',false)", [sid10]);
+assert.equal((await one("select status from sessions where slug='s10'")).status, 'running', "토글을 꺼도 되돌아가지 않음");
+await one("select set_session_lock($1,'pulse',true)", [sid11]);
+assert.equal((await one("select status from sessions where slug='s11'")).status, 'done', "완료된 차수는 다시 진행 중이 되지 않음");
 console.log("ALL PASS", both.map(b=>b.status));

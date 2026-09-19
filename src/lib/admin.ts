@@ -24,10 +24,17 @@ export async function adminDb() {
   return supabase;
 }
 
-/** 배포 주소 — QR·링크에 쓴다. NEXT_PUBLIC_SITE_URL이 있으면 우선(커스텀 도메인 고정용). */
+/**
+ * 배포 주소 — QR·링크·인쇄 시트에 쓴다.
+ *  1) NEXT_PUBLIC_SITE_URL (커스텀 도메인을 쓸 때 직접 지정)
+ *  2) Vercel의 프로덕션 도메인 — 운영자가 미리보기(preview) 주소로 콘솔을 열어도 QR은 실제 주소를 가리킨다.
+ *     미리보기 주소는 Vercel 로그인 보호가 걸려 참여자가 열 수 없고, 배포마다 바뀐다.
+ *  3) 그 밖에는 지금 접속한 주소 (로컬 개발)
+ */
 export async function siteOrigin(): Promise<string> {
   const fixed = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
   if (fixed) return fixed;
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
   const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
