@@ -15,6 +15,8 @@ export type DashboardData = {
   pledges: number; pledges_custom: number; finders: number;
   cloud: Pair[]; work_top: Pair[]; dna_top: Pair[];
   ranks: Pair[]; heritage: Pair[]; future: Pair[];
+  pledge_flow: { adj: Pair[]; noun: Pair[]; links: [adj: string, noun: string, count: number][] };
+  hf_words: [word: string, heritage: number, future: number][];
   pulse: { n: number; q: [pre: number, post: number][] };
 };
 

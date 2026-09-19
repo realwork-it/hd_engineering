@@ -58,13 +58,13 @@ await db.query("insert into app_settings values ('dashboard_token', '\"demo\"')"
   for (const [i, t] of tms.entries())
     await db.query("insert into team_identities (id, session_id, team_id, work, dna, goal) values (gen_random_uuid(),$1,$2,$3,$4,$5)",
       [sess[i % sess.length].id, t.id, skew(works), skew(dnas) + "의 DNA", skew(goals)]);
-  for (let i = 0; i < 80; i++)
+  for (let i = 0; i < 400; i++)
     await db.query("insert into finder_submissions (id, session_id, team_id, h_adj, h_noun, f_adj, f_noun) values (gen_random_uuid(),$1,$2,$3,$4,$5,$6) on conflict do nothing",
-      [sess[i % sess.length].id, tms[(i * 7) % tms.length].id, skew(adj.slice(0, 6)), skew(noun.slice(0, 5)), skew(adj.slice(20, 26)), skew(noun.slice(9, 14))]);
+      [sess[i % sess.length].id, tms[(i * 7 + Math.floor(i / sess.length)) % tms.length].id, skew(adj.slice(0, 14)), skew(noun.slice(0, 12)), skew(adj.slice(6, 22).reverse()), skew(noun.slice(4, 18).reverse())]);
   for (let i = 0; i < 600; i++) {
     const custom = rnd() < 0.12;
     await db.query("insert into pledges (id, session_id, team_id, adj, adj_custom, noun, action) values (gen_random_uuid(),$1,$2,$3,$4,$5,'데모 실천')",
-      [sess[i % sess.length].id, tms[i % tms.length].id, custom ? "타협 없는" : skew(adj.slice(0, 12)), custom, skew(noun.slice(0, 10))]);
+      [sess[i % sess.length].id, tms[i % tms.length].id, custom ? "타협 없는" : skew(adj.slice(0, 30)), custom, skew(noun.slice(0, 30))]);
     const pre = () => 2 + Math.floor(rnd() * 3), post = () => 5 + Math.floor(rnd() * 3);
     if (i % 10 < 9) await db.query("insert into pulses values (gen_random_uuid(),$1,$2,$3,$4,$5,$6,$7,$8,$9,'데모 주관식 응답입니다. 열 글자 이상.')",
       [sess[i % sess.length].id, pre(), post(), pre() + 1, post(), pre(), post(), pre(), post()]);

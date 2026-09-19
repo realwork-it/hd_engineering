@@ -2,6 +2,8 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { DashboardData, DashSession, Pair } from "@/lib/dashboard";
+import { PledgeFlow } from "./PledgeFlow";
+import { TalentShift } from "./TalentShift";
 
 // R16 분모
 const TOTAL_SESSIONS = 40, TOTAL_PEOPLE = 2659, TOTAL_TEAMS = 164;
@@ -125,10 +127,10 @@ export function DashboardView({ initial }: { initial: DashboardData }) {
             <div className="db-hd">
               <div>
                 <h2>{data.pledges.toLocaleString()}개의 다짐이 향하는 곳</h2>
-                <div className="db-cap">&apos;무엇을 위해&apos; 실천하는가 — 형용사+명사 상위 8</div>
+                <div className="db-cap">&apos;어떤 태도로&apos; → &apos;무엇을&apos; — 자주 고른 단어와, 함께 선택된 연결(굵을수록 많이)</div>
               </div>
             </div>
-            {data.ranks.length ? <Ranks ranks={data.ranks} /> : <div className="db-empty">첫 다짐을 기다리고 있습니다</div>}
+            {data.pledges ? <PledgeFlow flow={data.pledge_flow} combos={data.ranks} total={data.pledges} /> : <div className="db-empty">첫 다짐을 기다리고 있습니다</div>}
             <div className="db-rank-foot">Pool 밖 직접 입력 단어 {custom}% — 인재상 Pool 보완의 단서로 수집 중</div>
           </section>
 
@@ -156,11 +158,11 @@ export function DashboardView({ initial }: { initial: DashboardData }) {
             <div className="db-hd">
               <div>
                 <h2>이 길에 필요한 사람</h2>
-                <div className="db-cap">인재상 키워드 {data.finders * 2}건 — 지켜온 모습과 나아갈 모습</div>
+                <div className="db-cap">인재상 키워드 {data.finders * 2}건 — 같은 단어가 &apos;지켜온 모습&apos;과 &apos;나아갈 모습&apos; 중 어디에서 더 불렸나</div>
               </div>
             </div>
-            <div className="db-bf-head"><span className="db-h">정체성에서 온 키워드</span><span className="db-f">미래사업에서 온 키워드</span></div>
-            {data.finders ? <Butterfly heritage={data.heritage} future={data.future} /> : <div className="db-empty">첫 키워드를 기다리고 있습니다</div>}
+            <div className="db-bf-head"><span className="db-h">← 지켜온 모습 (Heritage)</span><span className="db-f">나아갈 모습 (Future) →</span></div>
+            {data.finders ? <TalentShift words={data.hf_words} heritage={data.heritage} future={data.future} /> : <div className="db-empty">첫 키워드를 기다리고 있습니다</div>}
             <div className="db-bf-foot">전 차수 취합 후 인재상 도출의 원천 데이터가 됩니다</div>
           </section>
         </div>
@@ -343,30 +345,13 @@ function SubSlot({ title, words }: { title: string; words: Pair[] }) {
 }
 
 /* 막대는 첫 페인트 뒤에 폭을 줘서 0 → 값으로 자란다 */
-function useGrow() {
+export function useGrow() {
   const [on, setOn] = useState(false);
   useEffect(() => {
     const id = requestAnimationFrame(() => requestAnimationFrame(() => setOn(true)));
     return () => cancelAnimationFrame(id);
   }, []);
   return on;
-}
-
-function Ranks({ ranks }: { ranks: Pair[] }) {
-  const on = useGrow();
-  const max = ranks[0][1];
-  return (
-    <div>
-      {ranks.map(([w, c], i) => (
-        <div className="db-rk" key={w}>
-          <span className="db-i">{i + 1}</span>
-          <span className="db-w">{w}</span>
-          <span className="db-bar"><span className="db-fill" style={{ width: on ? `${(c / max) * 100}%` : 0 }} /></span>
-          <span className="db-v">{c}</span>
-        </div>
-      ))}
-    </div>
-  );
 }
 
 function Dumbbell({ q }: { q: [number, number][] }) {
@@ -390,24 +375,6 @@ function Dumbbell({ q }: { q: [number, number][] }) {
           </div>
         );
       })}
-    </div>
-  );
-}
-
-function Butterfly({ heritage, future }: { heritage: Pair[]; future: Pair[] }) {
-  const on = useGrow();
-  const max = Math.max(1, ...heritage.map((x) => x[1]), ...future.map((x) => x[1]));
-  const rows = Array.from({ length: Math.max(heritage.length, future.length) }, (_, i) => [heritage[i], future[i]] as const);
-  const w = (c: number) => (on ? `${((c / max) * 46).toFixed(1)}%` : 0);
-  return (
-    <div className="db-bf">
-      {rows.map(([h, f], i) => (
-        <div className="db-bfrow" key={i}>
-          <span className="db-bf-side db-l">{h && <><span className="db-w">{h[0]} {h[1]}</span><span className="db-bar" style={{ width: w(h[1]) }} /></>}</span>
-          <span className="db-bf-mid" />
-          <span className="db-bf-side db-r">{f && <><span className="db-bar" style={{ width: w(f[1]) }} /><span className="db-w">{f[1]} {f[0]}</span></>}</span>
-        </div>
-      ))}
     </div>
   );
 }

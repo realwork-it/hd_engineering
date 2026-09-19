@@ -76,6 +76,10 @@ assert.equal(d.people, 150); assert.equal(d.pledges, 3); assert.equal(d.sessions
 assert.equal(d.pulse.n, 1); assert.deepEqual(d.pulse.q[0], [1, 7]);
 assert.equal(d.ranks[0][0], '집요한 도전'); assert.equal(d.teams_with_identity, 2);
 assert.ok(d.cloud.some(([w]) => w === 'goal'));
+// 재설계 집계: 단어 기둥 + 조합 연결, 같은 단어의 Heritage/Future 건수
+assert.deepEqual(d.pledge_flow.adj[0], ['집요한', 3]); assert.deepEqual(d.pledge_flow.noun[0], ['도전', 3]);
+assert.deepEqual(d.pledge_flow.links[0], ['집요한', '도전', 3]);
+assert.deepEqual(Object.fromEntries(d.hf_words.map(([w, h, f]) => [w, [h, f]])), { '집요한': [1, 0], '도전': [1, 0], '데이터에 밝은': [0, 1], '판단': [0, 1] });
 const dump = JSON.stringify(d);
 assert.ok(!dump.includes('s1') && !dump.includes('A팀') && !dump.includes('edited') && !dump.includes('열 글자'), "원문·slug·팀명 비노출");
 await db.exec("update pledges set hidden=true where device_key='dev3'");
