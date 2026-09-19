@@ -42,8 +42,7 @@ export function ScheduleUpload({ onClose, onDone }: { onClose: () => void; onDon
       <div className="ad-modal" role="dialog" aria-modal="true" aria-label="일정 엑셀 업로드" style={{ maxWidth: 720 }}>
         <h2>일정 엑셀 업로드</h2>
         <div className="cap">
-          차수 번호(display_no)를 기준으로 기존 차수에 맞춰 넣습니다. 파일에 있는 열만 반영되고 <b>빈 칸은 기존 값을 그대로 둡니다</b>. QR·링크는 바뀌지 않습니다.{" "}
-          <a href="/admin/sessions/export" style={{ color: "var(--navy)", fontWeight: 700 }}>현재 차수표 내려받기(양식)</a>
+          차수 번호(display_no)를 기준으로 기존 차수에 맞춰 넣습니다. 파일에 있는 열만 반영되고 <b>빈 칸은 기존 값을 그대로 둡니다</b>. QR·링크는 바뀌지 않습니다.
         </div>
 
         <input type="file" accept=".xlsx,.csv" disabled={pending} onChange={(e) => pick(e.target.files?.[0])} aria-label="일정 파일 선택" />
