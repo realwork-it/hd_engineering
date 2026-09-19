@@ -11,7 +11,7 @@ alter default privileges in schema public grant all on tables to anon, authentic
 alter default privileges in schema public grant execute on functions to anon, authenticated, service_role;`);
 for (const f of readdirSync(dir).sort()) await db.exec(readFileSync(dir + f, "utf8").replace("create extension if not exists pgcrypto;",""));
 await db.exec(`insert into sessions(slug,display_no,status) values ('s1','1','confirmed'),('s2','2','confirmed');
-insert into teams(name,org_name) values ('A팀','본부');
+insert into teams(name,org_name) values ('A팀','본부'),('B팀','본부');
 insert into app_settings values ('pool_adj','["집요한"]'),('pool_noun','["도전"]'),('study_default_url','"https://example.com/study"');`);
 const one = async (sql, p) => (await db.query(sql, p)).rows[0];
 const teamA = (await one("select id from teams where name='A팀'")).id;
@@ -20,7 +20,7 @@ const ident = (id, slug, team, raw, w, ow=false, dk='d1') => one("select submit_
 
 let id1 = U();
 assert.equal((await ident(id1,'s1',teamA,null,'w1')).status, 'locked');
-await db.exec(`update sessions set locks = '{"study":true,"identity":true,"finder":true,"pledge":true,"pulse":true}'`);
+await db.exec(`update sessions set locks = '{"study":true,"identity":true,"finder":true,"promise":true,"pulse":true}'`);
 assert.equal((await ident(id1,'nope',teamA,null,'w1')).status, 'not_found');
 assert.equal((await ident(id1,'s1',teamA,null,'w1')).status, 'created');
 assert.equal((await ident(id1,'s1',teamA,null,'w1')).status, 'updated');            // retry, same payload
@@ -41,13 +41,22 @@ assert.equal((await fin(U())).status,'exists');
 assert.equal((await fin(U(),true)).status,'updated');
 assert.deepEqual(await one("select h_adj_custom a,h_noun_custom b,f_adj_custom c,f_noun_custom d from finder_submissions"),{a:false,b:false,c:true,d:true});
 
-const pl = (id, dk, act='act') => one("select submit_pledge($1,'s1',$2,null,'집요한','도전',$3,$4) r",[id,teamA,act,dk]).then(r=>r.r);
+// 팀 실천약속: 팀당 1건 — 팀 정체성과 같은 규칙 (멱등, 다른 기기 = exists, 동의 시 수정 + 이력, 다른 차수 = 별건)
+const teamB = (await one("select id from teams where name='B팀'")).id;
+const prom = (id, slug, team, raw, leader, ow = false, dk = 'd1') =>
+  one("select submit_promise($1,$2,$3,$4,$5,'팀원은 피드백을 바로 공유합니다','우리는 매주 금요일 회고를 합니다',$6,$7) r", [id, slug, team, raw, leader, dk, ow]).then((r) => r.r);
 const p1 = U();
-const both = await Promise.all([pl(p1,'dev1'), pl(p1,'dev1')]);                         // double tap
-assert.equal((await pl(U(),'dev1','edited')).status,'updated');                       // same device = edit
-assert.equal((await pl(U(),'dev2')).status,'created');
-assert.equal((await one("select count(*)::int c from pledges")).c, 2);
-assert.equal((await one("select action from pledges where device_key='dev1'")).action,'edited');
+const both = await Promise.all([prom(p1, 's1', teamA, null, '리더는 회의를 정시에 시작합니다'), prom(p1, 's1', teamA, null, '리더는 회의를 정시에 시작합니다')]); // 더블탭
+assert.deepEqual(both.map((b) => b.status).sort(), ['created', 'updated']);
+assert.equal((await one("select count(*)::int c from team_promise_revisions")).c, 0);                       // 같은 내용 재전송은 이력 없음
+assert.equal((await prom(U(), 's1', teamA, null, '리더는 결정 배경을 설명합니다', false, 'd2')).status, 'exists');   // 같은 팀의 다른 사람
+assert.equal((await prom(U(), 's1', teamA, null, '리더는 결정 배경을 설명합니다', true, 'd2')).status, 'updated');   // 수정 동의
+assert.equal((await one("select count(*)::int c from team_promise_revisions")).c, 1);
+assert.equal((await one("select count(*)::int c from team_promises")).c, 1);
+assert.equal((await prom(U(), 's2', teamA, null, '리더는 회의 안건을 미리 공유합니다')).status, 'created');         // 다른 차수 = 별건
+assert.equal((await prom(U(), 's1', teamB, null, '리더는 회의 안건을 미리 공유합니다')).status, 'created');
+assert.equal((await prom(U(), 's2', null, '신재생TF', '리더는 먼저 묻습니다')).status, 'created');                   // 미등록 팀(병합 테스트용)
+await assert.rejects(one("select submit_promise($1,'s2',$2,null,'','m','r','d',false)", [U(), teamB]), /check/);   // 빈 칸 거부 (B팀은 s2에 아직 제출 없음 → insert 경로)
 
 const pu = U();
 for (let i=0;i<3;i++) assert.equal((await one("select submit_pulse($1,'s1','{1,7,2,6,3,5,4,4}','열 글자 이상의 주관식 응답') r",[pu])).r.status,'created');
@@ -70,20 +79,23 @@ assert.ok(await one("select * from get_session_hub('s1')"));
 // ---- M3: dashboard_data (R11 통계만, R14 숨김 제외, 취소 차수 제외) ----
 await db.exec("reset role");
 await db.exec(`update sessions set status='done', actual=100 where slug='s1'; update sessions set status='running', expected=50 where slug='s2';`);
-await pl(U(),'dev3');  // s1 다짐 1건 추가 (총 3)
 let d = (await one("select dashboard_data() d")).d;
-assert.equal(d.people, 150); assert.equal(d.pledges, 3); assert.equal(d.sessions.length, 2);
+assert.equal(d.people, 150); assert.equal(d.sessions.length, 2);
+assert.equal(d.promises, 4); assert.equal(d.teams_with_promise, 3);
 assert.equal(d.pulse.n, 1); assert.deepEqual(d.pulse.q[0], [1, 7]);
-assert.equal(d.ranks[0][0], '집요한 도전'); assert.equal(d.teams_with_identity, 2);
+assert.equal(d.teams_with_identity, 2);
 assert.ok(d.cloud.some(([w]) => w === 'goal'));
-// 재설계 집계: 단어 기둥 + 조합 연결, 같은 단어의 Heritage/Future 건수
-assert.deepEqual(d.pledge_flow.adj[0], ['집요한', 3]); assert.deepEqual(d.pledge_flow.noun[0], ['도전', 3]);
-assert.deepEqual(d.pledge_flow.links[0], ['집요한', '도전', 3]);
+// 팀 실천약속: 카테고리별 핵심 단어 — 조사·서술어 꼬리를 떼고('회의를'→'회의', '공유합니다'→'공유'), '리더·팀원·우리'는 제외
+const pw = Object.fromEntries(Object.entries(d.promise_words).map(([k, v]) => [k, Object.fromEntries(v)]));
+assert.equal(pw.leader['회의'], 2); assert.equal(pw.leader['안건'], 2); assert.equal(pw.leader['리더'], undefined);
+assert.equal(pw.member['피드백'], 4); assert.equal(pw.member['공유'], 4); assert.equal(pw.routine['회고'], 4);
+assert.ok(!JSON.stringify(d.promise_words).includes('합니다'));
+// 같은 단어의 Heritage/Future 건수
 assert.deepEqual(Object.fromEntries(d.hf_words.map(([w, h, f]) => [w, [h, f]])), { '집요한': [1, 0], '도전': [1, 0], '데이터에 밝은': [0, 1], '판단': [0, 1] });
 const dump = JSON.stringify(d);
-assert.ok(!dump.includes('s1') && !dump.includes('A팀') && !dump.includes('edited') && !dump.includes('열 글자'), "원문·slug·팀명 비노출");
-await db.exec("update pledges set hidden=true where device_key='dev3'");
-assert.equal((await one("select dashboard_data() d")).d.pledges, 2);
+assert.ok(!dump.includes('s1') && !dump.includes('A팀') && !dump.includes('정시에 시작') && !dump.includes('열 글자'), "원문·slug·팀명 비노출");
+await db.exec("update team_promises set hidden=true where team_id=(select id from teams where name='B팀')");
+assert.equal((await one("select dashboard_data() d")).d.promises, 3);
 await db.exec("update sessions set status='canceled' where slug='s2'");
 d = (await one("select dashboard_data() d")).d;
 assert.equal(d.people, 100); assert.equal(d.sessions.length, 1);
@@ -92,30 +104,29 @@ await assert.rejects(db.exec("update sessions set status='pilot' where slug='s1'
 // ---- M4: merge_team (미등록 팀 병합) ----
 await assert.rejects(one("select merge_team($1,$2)", [teamA, teamA]), /forbidden/);           // 운영자 아님
 await db.exec(`create or replace function auth.jwt() returns jsonb language sql stable as $fn$ select '{"email":"op@x.com"}'::jsonb $fn$; insert into admin_emails values ('op@x.com');`);
-const pend = (await one("select id from teams where name='신재생TF'")).id;                      // s1에 정체성 1건(pending)
-await one("select submit_pledge($1,'s1',null,'신재생TF','집요한','도전','병합 테스트','devM') r", [U()]);
-const mr = (await one("select merge_team($1,$2) r", [pend, teamA])).r;                          // A팀은 s1에 정체성이 이미 있음 → 충돌 1
-assert.deepEqual(mr, { moved: 1, conflicts: 1 });
+const pend = (await one("select id from teams where name='신재생TF'")).id;                      // s1 정체성 1건 + s2 실천약속 1건
+const mr = (await one("select merge_team($1,$2) r", [pend, teamA])).r;                          // A팀은 s1 정체성·s2 실천약속이 이미 있음 → 둘 다 충돌(숨김)
+assert.deepEqual(mr, { moved: 0, conflicts: 2 });
+assert.equal((await one("select hidden from team_promises where team_id=$1", [pend])).hidden, true);
 assert.equal((await one("select status from teams where id=$1", [pend])).status, 'merged');
 assert.equal((await one("select hidden from team_identities where team_id=$1", [pend])).hidden, true);
-assert.equal((await one("select count(*)::int c from pledges where team_id=$1", [pend])).c, 0);
 await assert.rejects(one("select merge_team($1,$2)", [pend, teamA]), /미등록 팀이 아닙니다/);
 
 // ---- 하드닝: 원자적 토글 · 병합 팀 따라가기 · 차수 종료 · 인원 잠정 집계 ----
 const sid1 = (await one("select id from sessions where slug='s1'")).id;
-await db.exec(`update sessions set locks='{"study":true,"identity":false,"finder":false,"pledge":false,"pulse":false}' where slug='s1'`);
-await Promise.all(['identity','finder','pledge','pulse'].map((a) => one("select set_session_lock($1,$2,true) r", [sid1, a])));
-assert.deepEqual((await one("select locks from sessions where slug='s1'")).locks, { study: true, identity: true, finder: true, pledge: true, pulse: true }, "동시 토글 4건이 서로 덮어쓰지 않음");
+await db.exec(`update sessions set locks='{"study":true,"identity":false,"finder":false,"promise":false,"pulse":false}' where slug='s1'`);
+await Promise.all(['identity','finder','promise','pulse'].map((a) => one("select set_session_lock($1,$2,true) r", [sid1, a])));
+assert.deepEqual((await one("select locks from sessions where slug='s1'")).locks, { study: true, identity: true, finder: true, promise: true, pulse: true }, "동시 토글 4건이 서로 덮어쓰지 않음");
 await assert.rejects(one("select set_session_lock($1,'nope',true)", [sid1]), /unknown activity/);
 // 병합된 팀: 기억된 id·이름으로 제출해도 병합 대상(A팀)에 붙는다
-const r1 = (await one("select submit_pledge($1,'s1',$2,null,'집요한','도전','병합 후 id로','devX1') r", [U(), pend])).r;
-const r2 = (await one("select submit_pledge($1,'s1',null,'신재생tf','집요한','도전','병합 후 이름으로','devX2') r", [U()])).r;
-assert.equal(r1.status, 'created'); assert.equal(r2.status, 'created');
-assert.equal((await one("select count(*)::int c from pledges where device_key in ('devX1','devX2') and team_id=$1", [teamA])).c, 2);
+const r1 = await prom(U(), 's1', pend, null, '리더는 병합 뒤에도 같은 팀입니다', true, 'devX1');   // 기억된 id → A팀의 기존 약속을 수정
+const r2 = await prom(U(), 's1', null, '신재생tf', '리더는 이름으로 와도 같은 팀입니다', false, 'devX2'); // 기억된 이름 → A팀으로 해석돼 '이미 제출됨'
+assert.equal(r1.status, 'updated'); assert.equal(r2.status, 'exists');
+assert.equal((await one("select count(*)::int c from team_promises where session_id=$1 and team_id=$2 and leader like '%병합 뒤에도%'", [sid1, teamA])).c, 1);
 assert.equal((await one("select count(*)::int c from teams where status='pending'")).c, 0, "병합된 이름으로 새 미등록 팀이 다시 생기지 않음");
 await one("select close_session($1)", [sid1]);
-assert.deepEqual(await one("select status, locks->>'pledge' p, locks->>'study' st from sessions where slug='s1'"), { status: 'done', p: 'false', st: 'true' });
-assert.equal((await one("select submit_pledge($1,'s1',$2,null,'집요한','도전','종료 후 제출','devX3') r", [U(), teamA])).r.status, 'locked');
+assert.deepEqual(await one("select status, locks->>'promise' p, locks->>'study' st from sessions where slug='s1'"), { status: 'done', p: 'false', st: 'true' });
+assert.equal((await prom(U(), 's1', teamB, null, '리더는 종료 후에 제출합니다')).status, 'locked');
 await db.exec("insert into sessions(slug,display_no,status,capacity,expected) values ('s9','9','running',150,70)");
 assert.equal((await one("select dashboard_data() d")).d.people, 170, "실참석이 없으면 대상자 인원으로 잠정 집계 (100 + 70) — 정원(150)은 쓰지 않는다");
 // Pulse 응답률 분모: 완료(s1=100)만. 진행 중인 s9(70)는 Pulse 응답이 없으므로 제외 → 응답이 들어오면 포함
