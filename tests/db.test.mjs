@@ -150,4 +150,19 @@ await one("select set_session_lock($1,'identity',false)", [sid10]);
 assert.equal((await one("select status from sessions where slug='s10'")).status, 'running', "토글을 꺼도 되돌아가지 않음");
 await one("select set_session_lock($1,'pulse',true)", [sid11]);
 assert.equal((await one("select status from sessions where slug='s11'")).status, 'done', "완료된 차수는 다시 진행 중이 되지 않음");
+
+// ---- 차수 자동 종료: 날짜(KST)가 지난 '진행 중' 차수만, 당일·미시작 차수는 그대로 ----
+await db.exec(`insert into sessions(slug,display_no,status,date,locks) values
+  ('c1','c1','running', (now() at time zone 'Asia/Seoul')::date - 1, '{"study":true,"identity":true,"finder":true,"promise":true,"pulse":true}'),
+  ('c2','c2','running', (now() at time zone 'Asia/Seoul')::date,     '{"study":true,"identity":true,"finder":false,"promise":false,"pulse":false}'),
+  ('c3','c3','confirmed', (now() at time zone 'Asia/Seoul')::date - 3, default),
+  ('c4','c4','running', null, default)`);
+assert.equal((await one("select auto_close_sessions() n")).n >= 1, true);
+const closed = Object.fromEntries((await db.query("select slug, status, locks->>'promise' p, locks->>'study' st from sessions where slug in ('c1','c2','c3','c4')")).rows.map((r) => [r.slug, r]));
+assert.deepEqual([closed.c1.status, closed.c1.p, closed.c1.st], ['done', 'false', 'true'], "어제 차수 → 종료 + 활동 잠금(시험공부 제외)");
+assert.equal(closed.c2.status, 'running', "오늘 차수는 닫지 않는다");
+assert.equal(closed.c3.status, 'confirmed', "시작한 적 없는 지난 차수는 그대로");
+assert.equal(closed.c4.status, 'running', "날짜 미정 차수는 그대로");
+assert.equal((await prom(U(), 'c1', teamB, null, '리더는 자동 종료 뒤에 제출합니다')).status, 'locked');
+assert.equal((await one("select auto_close_sessions() n")).n, 0, "다시 불러도 할 일이 없으면 0");
 console.log("ALL PASS", both.map(b=>b.status));

@@ -5,6 +5,7 @@ import { TodayCard } from "@/components/admin/TodayCard";
 import { DashboardShare } from "@/components/admin/DashboardShare";
 import { DayPicker } from "@/components/admin/DayPicker";
 import { AutoRefresh } from "@/components/admin/AutoRefresh";
+import { autoCloseSessions } from "@/lib/auto-close";
 
 export const dynamic = "force-dynamic";
 
@@ -15,12 +16,13 @@ export default async function TodayPage({ searchParams }: PageProps<"/admin">) {
   const isToday = date === today;
 
   const db = await adminDb();
-  const [{ data: rows }, { data: next }, { data: token }, { data: stale }, origin] = await Promise.all([
+  await autoCloseSessions(); // 날짜가 지난 '진행 중' 차수 정리 (DB 예약 작업의 이중 안전장치)
+  const [{ data: rows }, { data: next }, { data: token }, { data: noActual }, origin] = await Promise.all([
     db.from("sessions").select(SESSION_COLUMNS).eq("date", date).neq("status", "canceled").order("room").order("display_no"),
     db.from("sessions").select("date").gt("date", date).neq("status", "canceled").order("date").limit(1),
     db.from("app_settings").select("value").eq("key", "dashboard_token").single(),
-    // 종료를 빠뜨린 지난 차수: 현황판에 계속 '진행 중'으로 남고 제출도 열려 있다
-    db.from("sessions").select("id, display_no, date").eq("status", "running").lt("date", today).order("date"),
+    // 자동 종료되면 FT가 콘솔에 다시 들어올 일이 없다 → 실참석 미입력 차수는 날짜와 상관없이 모아서 알려 준다
+    db.from("sessions").select("id, display_no, date").eq("status", "done").is("actual", null).order("date"),
     siteOrigin(),
   ]);
   const sessions = (rows ?? []) as SessionRow[];
@@ -28,7 +30,6 @@ export default async function TodayPage({ searchParams }: PageProps<"/admin">) {
 
   const expected = sessions.reduce((a, s) => a + (s.expected ?? 0), 0);
   const places = [...new Set(sessions.map((s) => s.location).filter(Boolean))].join(" · ");
-  const missingActual = sessions.filter((s) => s.status === "done" && s.actual == null);
 
   return (
     <>
@@ -50,22 +51,17 @@ export default async function TodayPage({ searchParams }: PageProps<"/admin">) {
         </div>
       </div>
 
-      {(stale ?? []).length > 0 && (
+      {(noActual ?? []).length > 0 && (
         <div className="ad-alert">
           ⚠️ <span>
-            <b>종료하지 않은 지난 차수</b>:{" "}
-            {(stale ?? []).map((s) => (
+            <b>실참석 인원 미입력</b>:{" "}
+            {(noActual ?? []).map((s) => (
               <Link key={s.id} href={`/admin?date=${s.date}`} style={{ color: "inherit", fontWeight: 700, marginRight: 8 }}>
                 {sessionLabel(s.display_no)}({dateLabel(s.date)})
               </Link>
             ))}
-            — 현황판에 계속 &apos;진행 중&apos;으로 보이고 제출도 열려 있습니다. 날짜를 눌러 이동한 뒤 실참석을 입력하고 <b>차수 종료</b>를 눌러 주세요.
+            — 입력 전까지 현황판 누적 인원·Pulse 응답률이 대상인원 기준으로 잠정 집계됩니다. 차수를 눌러 이동한 뒤 입력해 주세요.
           </span>
-        </div>
-      )}
-      {missingActual.length > 0 && (
-        <div className="ad-alert">
-          ⚠️ <span>종료된 차수 중 <b>실참석 인원 미입력</b>: {missingActual.map((s) => sessionLabel(s.display_no)).join(", ")} — 현황판 누적 인원이 대상인원으로 잠정 집계됩니다.</span>
         </div>
       )}
 
@@ -85,7 +81,7 @@ export default async function TodayPage({ searchParams }: PageProps<"/admin">) {
 
       <div className="ad-helper" style={{ margin: "12px 0 22px" }}>
         활동 스위치는 참여자 허브의 잠금과 연동됩니다 — 모듈이 시작될 때 FT가 켜면, 참여자 화면에서 15초 안에 열립니다.
-        실참석 인원은 차수 종료 시 입력해 주세요(응답률 계산의 분모가 됩니다).
+        실참석 인원은 워크숍이 끝나면 입력해 주세요(응답률 계산의 분모가 됩니다). 차수는 날짜가 지나면 자동으로 종료되며, 그 전에 직접 종료할 수도 있습니다.
       </div>
 
       <DashboardShare url={`${origin}/dashboard?k=${token?.value ?? ""}`} />

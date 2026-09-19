@@ -108,7 +108,8 @@ export function TodayCard({ session: s, hubUrl, notice }: { session: SessionRow;
                 if (!confirm(`${sessionLabel(s.display_no)}를 종료할까요?
 
 열려 있는 활동이 모두 잠기고(시험공부 자료 제외) 이후 제출은 받지 않습니다.
-아직 제출 중인 참여자가 없는지 확인해 주세요.`)) return;
+아직 제출 중인 참여자가 없는지 확인해 주세요.
+(누르지 않아도 날짜가 지나면 자동으로 종료됩니다)`)) return;
                 start(async () => {
                   const res = await closeSession(s.id);
                   toast(res.ok ? "차수를 종료하고 활동을 잠갔습니다" : `종료 실패: ${res.message}`);
