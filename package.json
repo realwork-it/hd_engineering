@@ -12,7 +12,10 @@
     "db:push": "supabase db push",
     "typecheck": "tsc --noEmit",
     "test": "node --test tests/*.test.*",
-    "dev:mock": "node scripts/dev-mock.mjs"
+    "dev:mock": "node scripts/dev-mock.mjs",
+    "loadtest": "node scripts/loadtest.mjs",
+    "backup": "node scripts/backup.mjs",
+    "rehearsal": "node scripts/rehearsal.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

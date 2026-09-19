@@ -28,6 +28,11 @@
   --radius-card: 16px;
 }
 
+/* Tailwind v4의 기본 리셋·유틸리티는 @layer 안에 있어 iOS Safari 15.3 이하에서는 통째로 무시된다.
+   참여자 화면이 그런 기기에서도 깨지지 않도록 최소한의 레이아웃을 레이어 밖에 둔다. */
+html, body { margin: 0; height: 100%; }
+body { min-height: 100%; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
+
 body {
   background: var(--color-paper);
   color: var(--color-deep);

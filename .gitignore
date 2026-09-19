@@ -42,3 +42,6 @@ next-env.d.ts
 
 # keep the template
 !.env.example
+
+# 로컬 백업 — 제출 원문 포함, 절대 커밋 금지
+/backups/
