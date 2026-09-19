@@ -30,8 +30,6 @@ export function SessionsTable({
 
   const canceled = sessions.filter((s) => s.status === "canceled").length;
   const visible = sessions.filter((s) => showCanceled || s.status !== "canceled");
-  const regular = sessions.filter((s) => s.status !== "pilot" && s.status !== "canceled").length;
-  const pilots = sessions.filter((s) => s.status === "pilot").length;
 
   return (
     <>
@@ -96,8 +94,8 @@ export function SessionsTable({
           </table>
         </div>
         <div className="ad-helper">
-          전체 {sessions.length - canceled}행 (파일럿 {pilots} + 정규 {regular}). 참석률 = 실참석 ÷ 예상(없으면 정원).
-          파일럿 차수는 현황판 집계에서 기본 제외됩니다. 차수는 삭제하지 않고 &apos;취소&apos; 상태로 바꿉니다.
+          전체 {sessions.length - canceled}개 차수. 참석률 = 실참석 ÷ 예상(없으면 정원).
+          차수는 삭제하지 않고 &apos;취소&apos; 상태로 바꿉니다.
         </div>
       </div>
 
@@ -134,7 +132,7 @@ function EditModal({
         <h2>{id ? "차수 편집" : "차수 추가"}</h2>
         <div className="cap">{id ? "번호·일정을 바꿔도 이미 발급된 링크와 QR은 그대로 유효합니다." : "저장하면 허브 링크와 QR이 자동 발급됩니다."}</div>
         <div className="ad-form">
-          <div><label htmlFor="f-no">차수 번호 *</label><input id="f-no" value={v.display_no} onChange={set("display_no")} placeholder="예) 14, P1" maxLength={10} /></div>
+          <div><label htmlFor="f-no">차수 번호 *</label><input id="f-no" value={v.display_no} onChange={set("display_no")} placeholder="예) 14" maxLength={10} /></div>
           <div>
             <label htmlFor="f-status">상태 *</label>
             <select id="f-status" value={v.status} onChange={set("status")}>

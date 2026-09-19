@@ -3,7 +3,7 @@ import { SessionsTable, type Stats } from "@/components/admin/SessionsTable";
 
 export const dynamic = "force-dynamic";
 
-// 표시 순서: 파일럿 → 정규(번호순). 번호는 라벨일 뿐이라 숫자 아닌 값도 허용한다.
+// 표시 순서: 번호순. 번호는 라벨일 뿐이라 숫자 아닌 값도 허용한다.
 function order(a: SessionRow, b: SessionRow) {
   const key = (s: SessionRow) => {
     const n = Number(s.display_no);

@@ -52,7 +52,6 @@
 .ad-badge.done{background:var(--ok-soft);color:var(--ok)}
 .ad-badge.confirmed{background:var(--blue-soft);color:var(--navy)}
 .ad-badge.tbd{background:#F0F1F4;color:var(--mut)}
-.ad-badge.pilot{background:var(--gold-soft);color:#7A5B0E}
 .ad-badge.canceled,.ad-badge.flag{background:var(--warn-soft);color:var(--warn)}
 
 /* today */

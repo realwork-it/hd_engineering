@@ -20,7 +20,7 @@ npm run dev
 
 ### 키 없이 로컬에서 참여자 화면 보기
 ```bash
-npm run dev:mock   # 임베디드 Postgres + 목 Supabase → http://localhost:3000/s/demo01 (전부 열림), /s/demo02 (초기 잠금)
+npm run dev:mock   # 임베디드 Postgres + 목 Supabase → http://localhost:3000/s/demo01 (전부 열림), /s/demo02 (초기 잠금), /dashboard?k=demo (데모 데이터 현황판)
 npm test           # 조사 처리(R10) + DB 제출 규칙(R3~R8·멱등)
 ```
 
@@ -45,6 +45,9 @@ src/proxy.ts               /admin 보호
 - 기기 키(`device_key`)는 localStorage가 아니라 서버 발급 httpOnly 쿠키 `hec_dk`(경로 `/s`). iOS Safari의 스크립트 저장소 7일 제한을 피하고, R15 리다이렉트(GET)에서도 읽을 수 있음. Pulse에는 전달하지 않음(R8).
 - 제출은 Server Action → DB 함수(`submit_*`, 서비스 롤 전용) 한 번의 호출로 잠금·팀 해석·멱등·이력을 원자적으로 처리.
 - 개인다짐 문장은 부록 B대로 `…를 위해, 나는 ___을 하겠습니다`. 실천 내용은 명사형으로 받고(예시·도움말 변경) 을/를은 받침으로 자동 선택.
+- **파일럿 개념 폐지**(운영 결정): 정규 40차수만. SPEC R12·`include_pilot`·status `pilot`은 제거. 일정은 콘솔에서 재입력.
+- 현황판 접근: `?k=토큰` → 서명 쿠키 발급 후 토큰 없는 주소로 이동(주소창 노출 방지). 토큰 재발급 시 기존 쿠키도 즉시 무효. 로그인한 운영자는 토큰 없이 열람.
+- 현황판 단어 빈도는 어절 단위 + 기능어(더·및·등…) 제외.
 - 운영자 화이트리스트는 `admin_emails` 테이블 + `is_admin()`.
 - 시드의 `(본부 직속)`은 `sil_name = null`로 저장. `대강의실 A`는 location `대강의실` / room `A`로 분리.
 - 시드 `expected`는 비워 둠(정원 합 2,608 ≠ 총원 2,659 — 콘솔에서 입력).

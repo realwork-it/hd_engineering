@@ -1,0 +1,130 @@
+/* 현황판 — docs/prototypes/dashboard.html의 CSS를 db- 접두사로 이식 */
+.db-root{
+  --bg:#0A1730; --bg2:#0D1C3B; --card:#11224A; --card-line:#1C3160;
+  --ink:#F2F5FB; --sub:#8FA2C8; --mut:#5C6F99;
+  --gold:#E3B341; --gold-deep:#C79A2A; --amber:#E8762C;
+  --pre:#6FA8E8; --grid:#1A2C55;
+  --r:18px;
+}
+.db-root *{margin:0;padding:0;box-sizing:border-box}
+.db-root{flex:1;background:var(--bg);color:var(--ink);line-height:1.5;min-height:100vh;font-family:var(--font-sans)}
+.db-wrap{max-width:1360px;margin:0 auto;padding:26px 32px 40px}
+
+/* ---------- header ---------- */
+.db-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px}
+.db-header .db-t h1{font-size:23px;font-weight:800;letter-spacing:-.015em}
+.db-header .db-t .db-s{font-size:13px;color:var(--sub);margin-top:3px}
+.db-header .db-r{display:flex;align-items:center;gap:9px}
+.db-pill{font-size:12px;font-weight:600;color:var(--sub);border:1px solid var(--card-line);border-radius:99px;padding:5px 12px}
+.db-pill.db-live{color:#7FD8A2;border-color:#1E4A38;display:flex;align-items:center;gap:6px}
+.db-pill.db-live::before{content:"";width:7px;height:7px;border-radius:50%;background:#4CC078;animation:blink 2.2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+.db-pill.db-demo{color:var(--gold);border-color:#4A3A12}
+
+/* ---------- grid ---------- */
+.db-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.db-card{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--card-line);border-radius:var(--r);padding:22px 24px;position:relative;overflow:hidden}
+.db-card h2{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.db-card .db-cap{font-size:12px;color:var(--sub);margin-top:2px}
+.db-card .db-hd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+.db-card .db-hd .db-note{font-size:11.5px;color:var(--mut)}
+
+/* ---------- hero: journey ---------- */
+.db-hero{grid-column:span 12;padding:26px 30px 20px}
+.db-hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:30px}
+.db-hero-title h2{font-size:17px}
+.db-hero-title .db-cap{margin-top:3px}
+.db-counters{display:flex;gap:38px}
+.db-counter{text-align:right}
+.db-counter .db-n{font-size:34px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.db-counter .db-n .db-u{font-size:16px;font-weight:700;color:var(--sub);margin-left:2px}
+.db-counter .db-l{font-size:12px;color:var(--sub);margin-top:1px}
+.db-counter.db-gold .db-n{color:var(--gold)}
+.db-roadbox{margin-top:8px;position:relative}
+.db-roadbox svg{width:100%;height:150px;display:block}
+.db-road-base{fill:none;stroke:var(--grid);stroke-width:5;stroke-linecap:round}
+.db-road-done{fill:none;stroke:url(#goldgrad);stroke-width:5;stroke-linecap:round}
+.db-node{fill:var(--bg);stroke:var(--mut);stroke-width:1.6}
+.db-node.db-done{fill:var(--gold);stroke:var(--gold-deep)}
+.db-node.db-now{fill:var(--amber);stroke:#F5B98C;stroke-width:2}
+.db-ring{fill:none;stroke:var(--amber);stroke-width:1.6;opacity:.8;transform-origin:center;animation:ring 2s ease-out infinite}
+@keyframes ring{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.1);opacity:0}}
+.db-roadmeta{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin-top:6px}
+.db-roadmeta b{color:var(--ink);font-weight:700}
+.db-tip{position:absolute;pointer-events:none;background:#050D1F;border:1px solid var(--card-line);border-radius:10px;padding:8px 11px;font-size:12px;line-height:1.5;color:var(--ink);opacity:0;transition:opacity .12s;white-space:nowrap;z-index:9}
+.db-tip .db-d{color:var(--sub);font-size:11px}
+
+/* ---------- cloud ---------- */
+.db-cloud-card{grid-column:span 7}
+.db-cloud-stage{position:relative;height:296px}
+.db-cloud-word{position:absolute;font-weight:800;letter-spacing:-.02em;white-space:nowrap;transform:translate(-50%,-50%)}
+.db-subslots{display:flex;gap:26px;margin-top:10px;padding-top:14px;border-top:1px solid var(--card-line)}
+.db-subslot .db-k{font-size:11.5px;color:var(--sub);margin-bottom:6px}
+.db-subslot .db-chips{display:flex;gap:6px;flex-wrap:wrap}
+.db-subslot .db-chip{font-size:12px;font-weight:600;color:#C9D6F0;background:#16294F;border:1px solid var(--card-line);border-radius:99px;padding:4px 10px}
+.db-subslot .db-chip b{color:var(--gold);font-weight:700;margin-left:4px}
+
+/* ---------- ranking ---------- */
+.db-rank-card{grid-column:span 5}
+.db-rk{display:flex;align-items:center;gap:12px;margin-bottom:9.5px}
+.db-rk .db-i{width:16px;font-size:12px;color:var(--mut);font-weight:700;text-align:right;flex-shrink:0}
+.db-rk .db-w{width:132px;font-size:13.5px;font-weight:700;flex-shrink:0;letter-spacing:-.01em}
+.db-rk .db-bar{flex:1;height:20px;background:#0E1E40;border-radius:6px;overflow:hidden}
+.db-rk .db-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#8A6516,var(--gold));width:0;transition:width 1s cubic-bezier(.2,.7,.3,1)}
+.db-rk .db-v{width:38px;font-size:12.5px;font-weight:700;color:var(--gold);text-align:right;font-variant-numeric:tabular-nums;flex-shrink:0}
+.db-rk:first-of-type .db-w{color:var(--gold)}
+.db-rank-foot{margin-top:12px;font-size:11.5px;color:var(--mut)}
+
+/* ---------- pulse ---------- */
+.db-pulse-card{grid-column:span 7}
+.db-legend{display:flex;gap:16px;font-size:12px;color:var(--sub);align-items:center}
+.db-legend .db-sw{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:-1px}
+.db-dumb{margin-top:4px}
+.db-drow{display:flex;align-items:center;gap:14px;height:47px}
+.db-drow .db-q{width:106px;font-size:13px;font-weight:700;flex-shrink:0;letter-spacing:-.01em}
+.db-drow .db-track{flex:1;position:relative;height:100%}
+.db-dline{position:absolute;top:50%;height:3px;background:linear-gradient(90deg,var(--pre),var(--gold));border-radius:3px;transform:translateY(-50%);width:0;transition:width .9s cubic-bezier(.2,.7,.3,1)}
+.db-dot{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;transform:translate(-50%,-50%)}
+.db-dot.db-pre{background:var(--pre);box-shadow:0 0 0 3px rgba(111,168,232,.15)}
+.db-dot.db-post{background:var(--gold);box-shadow:0 0 0 3px rgba(227,179,65,.15)}
+.db-dval{position:absolute;top:4px;font-size:11px;font-weight:700;color:var(--sub);transform:translateX(-50%);font-variant-numeric:tabular-nums}
+.db-dval.db-post{color:var(--gold)}
+.db-delta{width:52px;flex-shrink:0;text-align:center;font-size:12px;font-weight:800;color:#7FD8A2;background:#0F2A22;border:1px solid #1E4A38;border-radius:8px;padding:4px 0;font-variant-numeric:tabular-nums}
+.db-paxis{display:flex;justify-content:space-between;margin-left:120px;margin-right:66px;font-size:10.5px;color:var(--mut);padding-top:2px}
+.db-pulse-foot{margin-top:12px;font-size:11.5px;color:var(--mut)}
+
+/* ---------- butterfly ---------- */
+.db-bf-card{grid-column:span 5}
+.db-bf{display:flex;flex-direction:column;gap:9px;margin-top:2px}
+.db-bf-head{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:2px}
+.db-bf-head .db-h{color:var(--pre)}.db-bf-head .db-f{color:var(--gold)}
+.db-bfrow{display:flex;align-items:center;gap:0}
+.db-bf-side{flex:1;display:flex;align-items:center;gap:8px}
+.db-bf-side.db-l{justify-content:flex-end}
+.db-bf-side .db-bar{height:16px;border-radius:5px;width:0;transition:width 1s cubic-bezier(.2,.7,.3,1)}
+.db-bf-side.db-l .db-bar{background:linear-gradient(270deg,#2E5FA3,var(--pre))}
+.db-bf-side.db-r .db-bar{background:linear-gradient(90deg,#8A6516,var(--gold))}
+.db-bf-side .db-w{font-size:12.5px;font-weight:700;white-space:nowrap;letter-spacing:-.01em}
+.db-bf-side.db-l .db-w{color:#BFD6F5}.db-bf-side.db-r .db-w{color:#F0DCA8}
+.db-bf-mid{width:2px;height:26px;background:var(--card-line);flex-shrink:0;margin:0 10px}
+.db-bf-foot{margin-top:12px;font-size:11.5px;color:var(--mut)}
+
+.db-footer{display:flex;justify-content:space-between;align-items:center;margin-top:18px;font-size:12px;color:var(--mut)}
+.db-footer b{color:var(--sub);font-weight:600}
+
+@media (prefers-reduced-motion:reduce){
+  .db-ring,.db-pill.db-live::before{animation:none}
+  .db-rk .db-fill,.db-dline,.db-bf-side .db-bar{transition:none}
+}
+@media (max-width:1080px){
+  .db-cloud-card,.db-rank-card,.db-pulse-card,.db-bf-card{grid-column:span 12}
+  .db-counters{gap:22px}.db-counter .db-n{font-size:26px}
+}
+.db-deny{display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}
+.db-deny h1{font-size:24px;font-weight:800}
+.db-deny p{margin-top:12px;font-size:14px;color:var(--sub);line-height:1.7}
+.db-empty{display:flex;align-items:center;justify-content:center;height:100%;min-height:120px;font-size:13px;color:var(--mut);text-align:center}
+.db-counter .db-l b{color:var(--ink);font-weight:700}
+/* 프로토타입 보정: inline span은 width가 무시된다 / 긴 조합(형용사+명사) 줄바꿈 방지 */
+.db-rk .db-fill{display:block}
+.db-rk .db-w{width:176px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

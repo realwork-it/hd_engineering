@@ -29,7 +29,7 @@ export const HUB_CARDS: { no: number; activity: Activity; title: string; desc: s
 ];
 
 export function sessionLabel(displayNo: string): string {
-  return /^\d/.test(displayNo) ? `${displayNo}차수` : `파일럿 ${displayNo}`;
+  return `${displayNo}차수`;
 }
 
 const DOW = ["일", "월", "화", "수", "목", "금", "토"];

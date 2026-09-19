@@ -66,4 +66,22 @@ await assert.rejects(one("select submit_pulse($1,'s1','{1,7,2,6,3,5,4,4}','열 �
 await assert.rejects(one("select _resolve_team(null,'x')"), /permission denied/);
 await db.exec("reset role; set role service_role");
 assert.ok(await one("select * from get_session_hub('s1')"));
+
+// ---- M3: dashboard_data (R11 통계만, R14 숨김 제외, 취소 차수 제외) ----
+await db.exec("reset role");
+await db.exec(`update sessions set status='done', actual=100 where slug='s1'; update sessions set status='running', expected=50 where slug='s2';`);
+await pl(U(),'dev3');  // s1 다짐 1건 추가 (총 3)
+let d = (await one("select dashboard_data() d")).d;
+assert.equal(d.people, 150); assert.equal(d.pledges, 3); assert.equal(d.sessions.length, 2);
+assert.equal(d.pulse.n, 1); assert.deepEqual(d.pulse.q[0], [1, 7]);
+assert.equal(d.ranks[0][0], '집요한 도전'); assert.equal(d.teams_with_identity, 2);
+assert.ok(d.cloud.some(([w]) => w === 'goal'));
+const dump = JSON.stringify(d);
+assert.ok(!dump.includes('s1') && !dump.includes('A팀') && !dump.includes('edited') && !dump.includes('열 글자'), "원문·slug·팀명 비노출");
+await db.exec("update pledges set hidden=true where device_key='dev3'");
+assert.equal((await one("select dashboard_data() d")).d.pledges, 2);
+await db.exec("update sessions set status='canceled' where slug='s2'");
+d = (await one("select dashboard_data() d")).d;
+assert.equal(d.people, 100); assert.equal(d.sessions.length, 1);
+await assert.rejects(db.exec("update sessions set status='pilot' where slug='s1'"), /check/);
 console.log("ALL PASS", both.map(b=>b.status));

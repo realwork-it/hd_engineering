@@ -5,7 +5,26 @@ const DEVICE_COOKIE = "hec_dk";
 
 export async function proxy(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith("/s/")) return participant(request);
+  if (request.nextUrl.pathname === "/dashboard") return dashboard(request);
   return admin(request);
+}
+
+// 현황판: ?k=토큰 → 서명한 값을 쿠키에 넣고 토큰 없는 주소로 보낸다(TV·빔 화면의 주소창에 토큰이 남지 않게).
+// 토큰이 맞는지는 페이지가 현재 토큰의 서명과 비교해 판정한다 → 재발급 즉시 기존 쿠키도 무효.
+async function dashboard(request: NextRequest) {
+  const k = request.nextUrl.searchParams.get("k");
+  if (!k) return NextResponse.next();
+  const key = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(process.env.DASHBOARD_TOKEN_SECRET ?? ""), { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
+  );
+  const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(k));
+  const value = [...new Uint8Array(mac)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  const response = NextResponse.redirect(new URL("/dashboard", request.url));
+  response.cookies.set("hec_dash", value, {
+    httpOnly: true, sameSite: "lax", secure: request.nextUrl.protocol === "https:",
+    path: "/dashboard", maxAge: 60 * 60 * 24 * 90,
+  });
+  return response;
 }
 
 // 참여자: 기기 키 쿠키 발급 (R7 같은 기기 재제출 판정, R15 조회 로그).
@@ -50,4 +69,4 @@ async function admin(request: NextRequest) {
   return response;
 }
 
-export const config = { matcher: ["/admin/:path*", "/s/:path*"] };
+export const config = { matcher: ["/admin/:path*", "/s/:path*", "/dashboard"] };

@@ -21,6 +21,8 @@ export function SideNav() {
           <span className="ico">{n.icon}</span>{n.label}
         </Link>
       ))}
+      <div className="sep" />
+      <a href="/dashboard" target="_blank" rel="noopener"><span className="ico">📊</span>현황판 ↗</a>
     </nav>
   );
 }

@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import type { SessionStatus } from "@/lib/admin";
 
 export const STATUS_LABEL: Record<SessionStatus, string> = {
-  pilot: "파일럿", tbd: "미정", confirmed: "확정", running: "진행 중", done: "완료", canceled: "취소",
+  tbd: "미정", confirmed: "확정", running: "진행 중", done: "완료", canceled: "취소",
 };
 
 export function StatusBadge({ status }: { status: SessionStatus }) {

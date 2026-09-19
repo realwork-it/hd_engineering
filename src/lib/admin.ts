@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import type { Locks } from "@/lib/participant/types";
 
-export type SessionStatus = "pilot" | "tbd" | "confirmed" | "running" | "done" | "canceled";
+export type SessionStatus = "tbd" | "confirmed" | "running" | "done" | "canceled";
 
 export type SessionRow = {
   id: string; slug: string; display_no: string; date: string | null;

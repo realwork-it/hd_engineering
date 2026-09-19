@@ -46,7 +46,7 @@ const teams = teamRows.map((r) => ({
 
 // sessions --------------------------------------------------------------------
 const sessionRows = readCsv("seed_sessions.csv");
-assert(sessionRows.length === 42, `sessions 42행이어야 함 (실제 ${sessionRows.length})`);
+assert(sessionRows.length === 40, `sessions 40행이어야 함 (실제 ${sessionRows.length})`);
 assert(POOL_ADJ.length === 50 && POOL_NOUN.length === 50, "Pool은 각 50개");
 {
   const { count, error } = await db.from("sessions").select("id", { count: "exact", head: true });
@@ -81,7 +81,6 @@ assert(POOL_ADJ.length === 50 && POOL_NOUN.length === 50, "Pool은 각 50개");
 // app_settings ----------------------------------------------------------------
 const settings = [
   { key: "study_default_url", value: "https://claude.ai/artifact/QpQj6eAVpJ8TDTT1WQXK3G" },
-  { key: "include_pilot", value: false },
   { key: "pool_adj", value: POOL_ADJ },
   { key: "pool_noun", value: POOL_NOUN },
   { key: "dashboard_token", value: randomBytes(24).toString("base64url") },
