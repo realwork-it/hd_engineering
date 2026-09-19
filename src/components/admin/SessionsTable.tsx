@@ -5,6 +5,7 @@ import type { SessionRow, SessionStatus } from "@/lib/admin";
 import { dateLabel, sessionLabel } from "@/lib/participant/types";
 import { saveSession, type SessionInput } from "@/app/admin/(console)/actions";
 import { STATUS_LABEL, StatusBadge, copyText, useToast } from "./ui";
+import { ScheduleUpload } from "./ScheduleUpload";
 
 export type Stats = {
   session_id: string; study_views: number; identities: number; finders: number; pledges: number; pulses: number;
@@ -27,6 +28,7 @@ export function SessionsTable({
   const [editing, setEditing] = useState<{ id: string | null; input: SessionInput } | null>(null);
   const [linkOf, setLinkOf] = useState<SessionRow | null>(null);
   const [showCanceled, setShowCanceled] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const canceled = sessions.filter((s) => s.status === "canceled").length;
   const visible = sessions.filter((s) => showCanceled || s.status !== "canceled");
@@ -45,6 +47,8 @@ export function SessionsTable({
               취소된 차수 {canceled}건 보기
             </label>
           )}
+          <a className="ad-btn sec" href="/admin/sessions/export">⬇ 엑셀</a>
+          <button className="ad-btn sec" onClick={() => setUploading(true)}>⬆ 일정 엑셀 업로드</button>
           <button className="ad-btn pri" onClick={() => setEditing({ id: null, input: EMPTY })}>+ 차수 추가</button>
         </div>
       </div>
@@ -105,6 +109,7 @@ export function SessionsTable({
           onSaved={(m) => { setEditing(null); toast(m); }}
         />
       )}
+      {uploading && <ScheduleUpload onClose={() => setUploading(false)} onDone={(m) => { setUploading(false); toast(m); }} />}
       {linkOf && <LinkModal session={linkOf} url={`${origin}/s/${linkOf.slug}`} onClose={() => setLinkOf(null)} toast={toast} />}
       {node}
     </>
