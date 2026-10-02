@@ -175,7 +175,7 @@ function LinkModal({
     <div className="ad-modal-bg" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="ad-modal" role="dialog" aria-modal="true" aria-label="QR·링크">
         <h2>{sessionLabel(s.display_no)} — QR·링크</h2>
-        <div className="cap">허브 링크 1개로 5개 활동에 모두 접근합니다. 번호·일정을 바꿔도 이 링크는 바뀌지 않습니다.</div>
+        <div className="cap">허브 링크 1개로 5개 활동에 모두 접근합니다. 번호·일정을 바꿔도 이 링크는 바뀌지 않습니다. QR 이미지(PNG 1024px)는 PPT·카톡에 바로 넣을 수 있습니다.</div>
         <div className="ad-qrbig">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={`/admin/qr?slug=${s.slug}`} alt="허브 QR" />
@@ -184,6 +184,7 @@ function LinkModal({
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
               <button className="ad-btn sm sec" onClick={async () => toast((await copyText(url)) ? "허브 링크가 복사되었습니다" : "복사에 실패했습니다")}>링크 복사</button>
               <a className="ad-btn sm sec" href={url} target="_blank" rel="noopener">참여자 화면 열기 ↗</a>
+              <a className="ad-btn sm sec" href={`/admin/qr?slug=${s.slug}&png=1&name=${encodeURIComponent(`QR_${sessionLabel(s.display_no)}_${[s.location, s.room].filter(Boolean).join("")}`)}`} download>⬇ QR 이미지(PNG)</a>
               <a className="ad-btn sm pri" href={`/admin/sessions/${s.id}/print`} target="_blank" rel="noopener">🖨 A4 인쇄 시트</a>
             </div>
           </div>

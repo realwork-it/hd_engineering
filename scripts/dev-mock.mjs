@@ -28,7 +28,7 @@ for (const t of teams)
 const seedJs = readFileSync(`${root}scripts/seed.mjs`, "utf8");
 const pool = (name) => JSON.stringify(seedJs.match(new RegExp(`const ${name} = "([^"]+)"`))[1].split(", "));
 await db.query("insert into app_settings values ('pool_adj',$1),('pool_noun',$2),('study_default_url',$3)", [
-  pool("POOL_ADJ"), pool("POOL_NOUN"), '"https://claude.ai/artifact/QpQj6eAVpJ8TDTT1WQXK3G"',
+  pool("POOL_ADJ"), pool("POOL_NOUN"), '"https://value-jeongseok.vercel.app/"',
 ]);
 // demo01: 전부 열림 / demo02: 초기 상태(시험공부만)
 await db.exec(`

@@ -75,6 +75,7 @@ export function TodayCard({ session: s, hubUrl, notice }: { session: SessionRow;
               <button className="ad-btn sm sec" onClick={async () => toast((await copyText(hubUrl)) ? "허브 링크가 복사되었습니다" : "복사에 실패했습니다")}>링크 복사</button>
               <button className="ad-btn sm sec" onClick={async () => toast((await copyText(notice)) ? "카톡 공지문이 복사되었습니다 — 붙여넣기만 하세요" : "복사에 실패했습니다")}>카톡 공지문</button>
               <a className="ad-btn sm sec" href={`/admin/sessions/${s.id}/print`} target="_blank" rel="noopener">🖨 시트</a>
+              <a className="ad-btn sm sec" href={`/admin/qr?slug=${s.slug}&png=1&name=${encodeURIComponent(`QR_${sessionLabel(s.display_no)}_${[s.location, s.room].filter(Boolean).join("")}`)}`} download>⬇ QR 이미지</a>
             </div>
           </div>
         </div>

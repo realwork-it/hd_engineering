@@ -32,6 +32,7 @@ export function DashboardShare({ url }: { url: string }) {
           <div className="btns">
             <a className="ad-btn sm pri" href={url} target="_blank" rel="noopener">현황판 열기 ↗</a>
             <button className="ad-btn sm sec" onClick={async () => toast((await copyText(url)) ? "뷰어 공유 링크가 복사되었습니다" : "복사에 실패했습니다")}>뷰어 공유 링크 복사</button>
+            <a className="ad-btn sm sec" href={`/admin/qr?dashboard=1&png=1&name=${encodeURIComponent("QR_현황판")}&v=${qrKey}`} download>⬇ QR 이미지</a>
             <button className="ad-btn sm danger" disabled={pending} onClick={rotate}>공유 링크 교체</button>
           </div>
           <div className="ad-helper">
