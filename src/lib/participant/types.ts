@@ -19,13 +19,13 @@ export type SubmitResult =
   | { ok: true; status: "created" | "updated" }
   | { ok: false; code: "locked" | "not_found" | "exists" | "invalid" | "error" };
 
-// 부록 B — 허브 카드 순서·번호 (동결)
+// 허브 카드 순서·번호 — 부록 B는 2~6(1 = 허브 자체)이었으나 참여자 혼동을 줄이기 위해 1~5로 표기 (운영 결정 2026-10-08)
 export const HUB_CARDS: { no: number; activity: Activity; title: string; desc: string }[] = [
-  { no: 2, activity: "study", title: "시험공부 자료", desc: "가치체계 능력시험 전, 가볍게 읽어보세요" },
-  { no: 3, activity: "identity", title: "팀 정체성 제출", desc: "팀에서 확정한 문장을 올려주세요" },
-  { no: 4, activity: "finder", title: "조별 인재상 제출", desc: "조에서 작성한 키워드를 올려주세요" },
-  { no: 5, activity: "promise", title: "팀 실천약속 제출", desc: "팀에서 정한 세 가지 약속을 올려주세요" },
-  { no: 6, activity: "pulse", title: "Pulse Check", desc: "워크숍을 마치며, 다섯 문항" },
+  { no: 1, activity: "study", title: "시험공부 자료", desc: "가치체계 능력시험 전, 가볍게 읽어보세요" },
+  { no: 2, activity: "identity", title: "팀 정체성 제출", desc: "팀에서 확정한 문장을 올려주세요" },
+  { no: 3, activity: "finder", title: "조별 인재상 제출", desc: "조에서 작성한 키워드를 올려주세요" },
+  { no: 4, activity: "promise", title: "팀 실천약속 제출", desc: "팀에서 정한 세 가지 약속을 올려주세요" },
+  { no: 5, activity: "pulse", title: "Pulse Check", desc: "워크숍을 마치며, 다섯 문항" },
 ];
 
 export function sessionLabel(displayNo: string): string {
